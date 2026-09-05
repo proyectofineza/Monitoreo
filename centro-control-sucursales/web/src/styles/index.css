@@ -1,0 +1,53 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html, body, #root { height: 100%; }
+  body { @apply bg-bg text-text; }
+}
+
+@layer components {
+  .badge {
+    @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold whitespace-nowrap;
+  }
+  .badge-dot {
+    @apply w-1.5 h-1.5 rounded-full;
+  }
+  .badge-green  { @apply bg-greensoft text-green; }
+  .badge-amber  { @apply bg-ambersoft text-amber; }
+  .badge-orange { @apply bg-orangesoft text-orange; }
+  .badge-red    { @apply bg-redsoft text-red; }
+  .badge-brand  { @apply bg-brandsoft text-brand; }
+  .badge-neutral{ @apply bg-surface3 text-text2; }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors;
+  }
+  .btn-primary { @apply bg-brand text-white hover:bg-[#3f7bef]; }
+  .btn-ghost   { @apply bg-surface2 text-text2 border border-border hover:text-text; }
+  .btn-danger  { @apply bg-redsoft text-red hover:bg-red hover:text-white; }
+  .btn-disabled{ @apply bg-surface3 text-text3 cursor-not-allowed; }
+
+  .card {
+    @apply bg-surface border border-border rounded-xl p-5;
+  }
+
+  .input {
+    @apply w-full bg-surface2 border border-border rounded-lg px-3 py-2.5 text-sm text-text placeholder-text3 outline-none focus:border-brand;
+  }
+
+  .navitem {
+    @apply flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[12.8px] font-medium text-text2 hover:bg-surface2 hover:text-text cursor-pointer;
+  }
+  .navitem.active { @apply bg-brandsoft text-brand; }
+
+  table.datatable { @apply w-full border-collapse text-[13px]; }
+  table.datatable thead th {
+    @apply text-left text-text3 text-[10.5px] uppercase tracking-wide px-4 py-2.5 border-b border-border bg-surface2;
+  }
+  table.datatable tbody td {
+    @apply px-4 py-2.5 border-b border-bordersoft align-middle;
+  }
+  table.datatable tbody tr:hover { @apply bg-surface2; }
+}

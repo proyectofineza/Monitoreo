@@ -1,0 +1,9 @@
+# Configuración mínima para usar la Supabase CLI en este proyecto
+# (opcional — también podés hacer todo desde el Dashboard web).
+#
+#   supabase link --project-ref TU-PROJECT-REF
+#   supabase db push                 # aplica las migraciones en /migrations
+#   supabase functions deploy admin-create-user
+#   supabase functions deploy admin-set-role
+
+project_id = "centro-control-sucursales"
