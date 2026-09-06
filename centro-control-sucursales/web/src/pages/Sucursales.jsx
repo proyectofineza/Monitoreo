@@ -100,6 +100,26 @@ export default function Sucursales() {
     else reload();
   };
 
+  const deleteBranch = async (b) => {
+    const ok = window.confirm(
+      `¿Eliminar definitivamente la sucursal "Suc. ${b.code} — ${b.name}"?\n\nEsta acción no se puede deshacer.`
+    );
+    if (!ok) return;
+    const { error } = await supabase.from('branches').delete().eq('id', b.id);
+    if (error) {
+      if (error.code === '23503') {
+        alert(
+          'No se puede eliminar esta sucursal porque ya tiene verificaciones, incidencias o historial de Score asociado.\n\n' +
+            'Para retirarla de circulación sin perder ese historial, usá "Desactivar" en su lugar.'
+        );
+      } else {
+        alert('No se pudo eliminar la sucursal: ' + error.message);
+      }
+      return;
+    }
+    reload();
+  };
+
   const downloadTemplate = () => {
     downloadCsv('plantilla_sucursales.csv', [{
       code: '151', name: 'Ejemplo Centro', address: 'Av. España 123', city: 'Asunción',
@@ -213,7 +233,8 @@ export default function Sucursales() {
                 {isAdmin && (
                   <td className="text-right whitespace-nowrap">
                     <button className="text-brand text-[11.5px] hover:underline mr-3" onClick={() => openEdit(b)}>Editar</button>
-                    <button className="text-[11.5px] hover:underline" onClick={() => toggleActive(b)}>{b.active ? 'Desactivar' : 'Activar'}</button>
+                    <button className="text-[11.5px] hover:underline mr-3" onClick={() => toggleActive(b)}>{b.active ? 'Desactivar' : 'Activar'}</button>
+                    <button className="text-red text-[11.5px] hover:underline" onClick={() => deleteBranch(b)}>Eliminar</button>
                   </td>
                 )}
               </tr>

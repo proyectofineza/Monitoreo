@@ -132,7 +132,7 @@ export default function Reportes() {
       <div className="grid grid-cols-4 gap-3 mb-4">
         <SummaryCard label="Sucursales en el reporte" value={summary.length} />
         <SummaryCard label="Verificaciones" value={totals.checks} />
-        <SummaryCard label="Incidencias" value={totals.incidents} color="#fbbf24" />
+        <SummaryCard label="Incidencias" value={totals.incidents} color="#ffc736" />
         <SummaryCard label="Score promedio" value={avgScore} color={scoreColor(avgScore)} />
       </div>
 

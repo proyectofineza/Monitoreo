@@ -36,12 +36,12 @@ export default function App() {
         <Route path="/monitoreo" element={<ProtectedRoute roles={['admin', 'supervisor', 'monitoreo']}><Monitoreo /></ProtectedRoute>} />
         <Route path="/monitoreo/:branchId" element={<ProtectedRoute roles={['admin', 'monitoreo']}><Verificacion /></ProtectedRoute>} />
         <Route path="/sucursales" element={<ProtectedRoute roles={['admin', 'supervisor']}><Sucursales /></ProtectedRoute>} />
-        <Route path="/incidencias" element={<ProtectedRoute roles={['admin', 'supervisor', 'rrhh']}><Incidencias /></ProtectedRoute>} />
-        <Route path="/historial" element={<Historial />} />
+        <Route path="/incidencias" element={<ProtectedRoute roles={['admin', 'supervisor']}><Incidencias /></ProtectedRoute>} />
+        <Route path="/historial" element={<ProtectedRoute roles={['admin', 'supervisor', 'monitoreo']}><Historial /></ProtectedRoute>} />
         <Route path="/ranking" element={<ProtectedRoute roles={['admin', 'supervisor']}><Ranking /></ProtectedRoute>} />
         <Route path="/score/:branchId" element={<ProtectedRoute roles={['admin', 'supervisor']}><Score /></ProtectedRoute>} />
         <Route path="/mapa" element={<ProtectedRoute roles={['admin', 'supervisor']}><Mapa /></ProtectedRoute>} />
-        <Route path="/reportes" element={<ProtectedRoute roles={['admin', 'supervisor', 'rrhh']}><Reportes /></ProtectedRoute>} />
+        <Route path="/reportes" element={<ProtectedRoute roles={['admin', 'supervisor']}><Reportes /></ProtectedRoute>} />
         <Route path="/usuarios" element={<ProtectedRoute roles={['admin']}><Usuarios /></ProtectedRoute>} />
         <Route path="/auditoria" element={<ProtectedRoute roles={['admin']}><Auditoria /></ProtectedRoute>} />
         <Route path="/configuracion" element={<ProtectedRoute roles={['admin']}><Configuracion /></ProtectedRoute>} />

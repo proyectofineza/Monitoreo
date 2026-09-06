@@ -9,7 +9,7 @@ import Kpi from '../components/Kpi.jsx';
 import Badge from '../components/Badge.jsx';
 import { scoreColor, SEVERITY_LABEL, SEVERITY_BADGE, fmtRelative } from '../lib/format.js';
 
-const SEV_COLORS = { baja: '#8b96a8', media: '#fbbf24', alta: '#fb923c', critica: '#f87171' };
+const SEV_COLORS = { baja: '#8b96a8', media: '#ffc736', alta: '#ff8a3d', critica: '#ff5468' };
 
 function dayKey(d) {
   return d.toISOString().slice(0, 10);
@@ -94,10 +94,10 @@ export default function DashboardEjecutivo() {
 
       <div className="grid grid-cols-5 gap-3 mb-4">
         <Kpi label="Sucursales activas" value={activeBranches} sub={`${branches.length} en total`} />
-        <Kpi label="Verificadas hoy" value={`${verifiedToday}/${activeBranches}`} sub={`${pctToday}% de cobertura`} color={pctToday >= 80 ? '#34d399' : pctToday >= 50 ? '#fbbf24' : '#f87171'} />
+        <Kpi label="Verificadas hoy" value={`${verifiedToday}/${activeBranches}`} sub={`${pctToday}% de cobertura`} color={pctToday >= 80 ? '#22e2a0' : pctToday >= 50 ? '#ffc736' : '#ff5468'} />
         <Kpi label="Score promedio red" value={avgScore ?? '—'} color={avgScore != null ? scoreColor(avgScore) : undefined} />
-        <Kpi label="Incidencias (histórico)" value={totalIncidents30} color="#fbbf24" />
-        <Kpi label="Críticas (histórico)" value={totalCritical30} color="#f87171" />
+        <Kpi label="Incidencias (histórico)" value={totalIncidents30} color="#ffc736" />
+        <Kpi label="Críticas (histórico)" value={totalCritical30} color="#ff5468" />
       </div>
 
       <div className="grid grid-cols-[1.5fr_1fr] gap-4 mb-4">
@@ -108,15 +108,15 @@ export default function DashboardEjecutivo() {
             <AreaChart data={dailySeries} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
               <defs>
                 <linearGradient id="incGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#4f8cff" stopOpacity={0.35} />
-                  <stop offset="100%" stopColor="#4f8cff" stopOpacity={0} />
+                  <stop offset="0%" stopColor="#5b6bff" stopOpacity={0.35} />
+                  <stop offset="100%" stopColor="#5b6bff" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid stroke="#1a212c" vertical={false} />
               <XAxis dataKey="date" tick={{ fill: '#5a6474', fontSize: 10.5 }} axisLine={{ stroke: '#232c3a' }} tickLine={false} />
               <YAxis tick={{ fill: '#5a6474', fontSize: 10.5 }} axisLine={false} tickLine={false} allowDecimals={false} width={26} />
               <Tooltip {...tooltipStyle} />
-              <Area type="monotone" dataKey="incidencias" stroke="#4f8cff" strokeWidth={2} fill="url(#incGrad)" />
+              <Area type="monotone" dataKey="incidencias" stroke="#5b6bff" strokeWidth={2} fill="url(#incGrad)" />
             </AreaChart>
           </ResponsiveContainer>
         </div>

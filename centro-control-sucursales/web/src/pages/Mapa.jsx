@@ -87,9 +87,9 @@ export default function Mapa() {
           ))}
         </div>
         <div className="ml-auto flex gap-4 text-[11.5px] text-text3">
-          <LegendDot color="#34d399" label={`Buen estado (${counts.buen_estado})`} />
-          <LegendDot color="#fb923c" label={`Atención (${counts.atencion})`} />
-          <LegendDot color="#f87171" label={`Requiere atención (${counts.critico})`} />
+          <LegendDot color="#22e2a0" label={`Buen estado (${counts.buen_estado})`} />
+          <LegendDot color="#ff8a3d" label={`Atención (${counts.atencion})`} />
+          <LegendDot color="#ff5468" label={`Requiere atención (${counts.critico})`} />
         </div>
       </div>
 
@@ -123,7 +123,7 @@ export default function Mapa() {
                       <div style={{ fontSize: 11, color: '#888', marginBottom: 8 }}>{scoreLabel(score)}</div>
                       <button
                         onClick={() => navigate(`/score/${b.id}`)}
-                        style={{ background: '#4f8cff', color: 'white', border: 'none', borderRadius: 6, padding: '5px 10px', fontSize: 11.5, fontWeight: 600, cursor: 'pointer', width: '100%' }}
+                        style={{ background: '#5b6bff', color: 'white', border: 'none', borderRadius: 6, padding: '5px 10px', fontSize: 11.5, fontWeight: 600, cursor: 'pointer', width: '100%' }}
                       >
                         Ver ficha de sucursal
                       </button>

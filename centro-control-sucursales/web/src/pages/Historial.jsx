@@ -29,7 +29,6 @@ const GRAVEDADES = [
 
 export default function Historial() {
   const [branches, setBranches] = useState([]);
-  const [operators, setOperators] = useState([]);
   const [checks, setChecks] = useState([]);
   const [incByCheck, setIncByCheck] = useState({});
   const [loading, setLoading] = useState(true);
@@ -37,19 +36,12 @@ export default function Historial() {
   const [dateFrom, setDateFrom] = useState(isoDate(new Date(Date.now() - 13 * 86400000)));
   const [dateTo, setDateTo] = useState(isoDate(new Date()));
   const [branchId, setBranchId] = useState('');
-  const [operatorId, setOperatorId] = useState('');
   const [resultado, setResultado] = useState('todas');
   const [gravedad, setGravedad] = useState('todas');
   const [search, setSearch] = useState('');
 
   useEffect(() => {
     supabase.from('branches').select('id, code, name, city').order('code').then(({ data }) => setBranches(data || []));
-    supabase
-      .from('profiles')
-      .select('id, full_name')
-      .in('role', ['monitoreo', 'admin'])
-      .order('full_name')
-      .then(({ data }) => setOperators(data || []));
   }, []);
 
   const load = async () => {
@@ -62,7 +54,6 @@ export default function Historial() {
     if (dateFrom) q = q.gte('started_at', `${dateFrom}T00:00:00`);
     if (dateTo) q = q.lte('started_at', `${dateTo}T23:59:59`);
     if (branchId) q = q.eq('branch_id', branchId);
-    if (operatorId) q = q.eq('operator_id', operatorId);
     if (resultado !== 'todas') q = q.eq('status', resultado);
 
     let incQ = supabase.from('incidents').select('check_id, severity').is('deleted_at', null);
@@ -92,7 +83,7 @@ export default function Historial() {
   useEffect(() => {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dateFrom, dateTo, branchId, operatorId, resultado]);
+  }, [dateFrom, dateTo, branchId, resultado]);
 
   const filtered = useMemo(() => {
     let list = checks.map((c) => ({ ...c, inc: incByCheck[c.id] || { count: 0, maxSeverity: null } }));
@@ -152,8 +143,8 @@ export default function Historial() {
       <div className="grid grid-cols-4 gap-3 mb-4">
         <Kpi label="Verificaciones" value={filtered.length} />
         <Kpi label="Con incidencia" value={filtered.filter((c) => c.status === 'con_incidencia').length} />
-        <Kpi label="Incidencias totales" value={totalIncidencias} color="#fbbf24" />
-        <Kpi label="Críticas" value={totalCriticas} color="#f87171" />
+        <Kpi label="Incidencias totales" value={totalIncidencias} color="#ffc736" />
+        <Kpi label="Críticas" value={totalCriticas} color="#ff5468" />
       </div>
 
       <div className="card mb-4">
@@ -169,14 +160,6 @@ export default function Historial() {
               <option value="">Todas las sucursales</option>
               {branches.map((b) => (
                 <option key={b.id} value={b.id}>{b.code} — {b.name}</option>
-              ))}
-            </select>
-          </Field>
-          <Field label="Operador">
-            <select className="input !w-[180px]" value={operatorId} onChange={(e) => setOperatorId(e.target.value)}>
-              <option value="">Todos los operadores</option>
-              {operators.map((o) => (
-                <option key={o.id} value={o.id}>{o.full_name}</option>
               ))}
             </select>
           </Field>

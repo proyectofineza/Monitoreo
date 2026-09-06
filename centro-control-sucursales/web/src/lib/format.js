@@ -43,9 +43,9 @@ export const ROLE_LABEL = { admin: 'Administrador', supervisor: 'Supervisor', mo
 export const ROLE_BADGE = { admin: 'badge-brand', supervisor: 'badge-amber', monitoreo: 'badge-green', rrhh: 'badge-orange' };
 
 export function scoreColor(score) {
-  if (score >= 80) return '#34d399';
-  if (score >= 60) return '#fb923c';
-  return '#f87171';
+  if (score >= 80) return '#22e2a0';
+  if (score >= 60) return '#ff8a3d';
+  return '#ff5468';
 }
 
 export function scoreLabel(score) {

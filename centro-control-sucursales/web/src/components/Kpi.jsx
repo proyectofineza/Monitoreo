@@ -1,8 +1,8 @@
 import React from 'react';
 
-export default function Kpi({ label, value, sub, color }) {
+export default function Kpi({ label, value, sub, color, pulse = false }) {
   return (
-    <div className="card !p-4">
+    <div className={`card !p-4 ${pulse ? 'pulse-red border-red/40' : ''}`}>
       <div className="text-[10.5px] text-text3 uppercase tracking-wide">{label}</div>
       <div className="text-[25px] font-semibold font-mono mt-1.5 leading-none" style={color ? { color } : undefined}>
         {value}

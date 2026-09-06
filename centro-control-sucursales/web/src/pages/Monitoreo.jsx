@@ -189,7 +189,7 @@ export default function Monitoreo() {
                 {tab === 'pendientes' ? (
                   <>
                     <td className="text-text3">{r.branch.city}</td>
-                    <td><Badge className={STATUS_BADGE[r.status]}>{STATUS_LABEL[r.status]}</Badge></td>
+                    <td><Badge className={STATUS_BADGE[r.status]} pulse={r.status === 'pendiente'}>{STATUS_LABEL[r.status]}</Badge></td>
                     <td className="font-mono text-text3">{r.lastLabel ?? '—'}</td>
                     <td className="text-right">
                       {canOperate && (

@@ -87,8 +87,8 @@ export default function Score() {
           <div className="mt-3"><Badge className={scoreBadgeClass(s)}>{scoreLabel(s)}</Badge></div>
           <div className="grid grid-cols-3 gap-2.5 mt-4 w-full">
             <Stat label="Verific." value={score?.total_checks ?? 0} />
-            <Stat label="Incid." value={score?.total_incidents ?? 0} color="#fbbf24" />
-            <Stat label="Críticas" value={score?.critical_incidents ?? 0} color="#f87171" />
+            <Stat label="Incid." value={score?.total_incidents ?? 0} color="#ffc736" />
+            <Stat label="Críticas" value={score?.critical_incidents ?? 0} color="#ff5468" />
           </div>
         </div>
 

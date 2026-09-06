@@ -8,7 +8,7 @@ import Kpi from '../components/Kpi.jsx';
 import { SEVERITY_LABEL, SEVERITY_BADGE, fmtDateTime, downloadCsv } from '../lib/format.js';
 import { IconSearch, IconReport } from '../components/icons.jsx';
 
-const SEV_COLORS = { baja: '#8b96a8', media: '#fbbf24', alta: '#fb923c', critica: '#f87171' };
+const SEV_COLORS = { baja: '#8b96a8', media: '#ffc736', alta: '#ff8a3d', critica: '#ff5468' };
 const tooltipStyle = {
   contentStyle: { background: '#161d29', border: '1px solid #232c3a', borderRadius: 8, fontSize: 12 },
   labelStyle: { color: '#8b96a8' },
@@ -140,8 +140,8 @@ export default function Incidencias() {
 
       <div className="grid grid-cols-4 gap-3 mb-4">
         <Kpi label="Incidencias (filtro actual)" value={filtered.length} />
-        <Kpi label="Abiertas" value={abiertas} color="#fbbf24" />
-        <Kpi label="Críticas" value={criticas} color="#f87171" />
+        <Kpi label="Abiertas" value={abiertas} color="#ffc736" />
+        <Kpi label="Críticas" value={criticas} color="#ff5468" />
         <Kpi label="Promedio por sucursal" value={avgPerBranch} sub={`${branchesInvolved} sucursales afectadas`} />
       </div>
 
@@ -170,7 +170,7 @@ export default function Incidencias() {
               <XAxis type="number" tick={{ fill: '#5a6474', fontSize: 10.5 }} axisLine={false} tickLine={false} allowDecimals={false} />
               <YAxis type="category" dataKey="label" tick={{ fill: '#8b96a8', fontSize: 11 }} axisLine={false} tickLine={false} width={130} />
               <Tooltip {...tooltipStyle} />
-              <Bar dataKey="count" fill="#4f8cff" radius={[0, 4, 4, 0]} />
+              <Bar dataKey="count" fill="#5b6bff" radius={[0, 4, 4, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>

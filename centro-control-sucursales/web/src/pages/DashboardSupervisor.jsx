@@ -85,10 +85,10 @@ export default function DashboardSupervisor() {
       </div>
 
       <div className="grid grid-cols-4 gap-3 mb-4">
-        <Kpi label="Verificadas hoy" value={`${verifiedToday}/${branches.length}`} sub={`${pct}% de cobertura`} color={pct >= 80 ? '#34d399' : pct >= 50 ? '#fbbf24' : '#f87171'} />
-        <Kpi label="Pendientes hoy" value={pending.length} color={pending.length > 0 ? '#f87171' : '#34d399'} />
-        <Kpi label="Incidencias hoy" value={incidentsToday.length} color="#fbbf24" />
-        <Kpi label="Críticas hoy" value={criticalToday} color="#f87171" />
+        <Kpi label="Verificadas hoy" value={`${verifiedToday}/${branches.length}`} sub={`${pct}% de cobertura`} color={pct >= 80 ? '#22e2a0' : pct >= 50 ? '#ffc736' : '#ff5468'} />
+        <Kpi label="Pendientes hoy" value={pending.length} color={pending.length > 0 ? '#ff5468' : '#22e2a0'} pulse={pending.length > 0} />
+        <Kpi label="Incidencias hoy" value={incidentsToday.length} color="#ffc736" />
+        <Kpi label="Críticas hoy" value={criticalToday} color="#ff5468" />
       </div>
 
       <div className="grid grid-cols-[1.4fr_1fr] gap-4 mb-4">

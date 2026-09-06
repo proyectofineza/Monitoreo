@@ -11,11 +11,11 @@ const NAV = [
   { to: '/', label: 'Dashboard', Icon: IconDashboard, roles: ['admin', 'supervisor', 'monitoreo', 'rrhh'] },
   { to: '/monitoreo', label: 'Monitoreo', Icon: IconCamera, roles: ['admin', 'supervisor', 'monitoreo'] },
   { to: '/sucursales', label: 'Sucursales', Icon: IconBuilding, roles: ['admin', 'supervisor'] },
-  { to: '/incidencias', label: 'Incidencias', Icon: IconAlert, roles: ['admin', 'supervisor', 'rrhh'] },
-  { to: '/historial', label: 'Verificaciones', Icon: IconClipboard, roles: ['admin', 'supervisor', 'monitoreo', 'rrhh'] },
+  { to: '/incidencias', label: 'Incidencias', Icon: IconAlert, roles: ['admin', 'supervisor'] },
+  { to: '/historial', label: 'Verificaciones', Icon: IconClipboard, roles: ['admin', 'supervisor', 'monitoreo'] },
   { to: '/ranking', label: 'Score / Ranking', Icon: IconTrophy, roles: ['admin', 'supervisor'] },
   { to: '/mapa', label: 'Mapa', Icon: IconMap, roles: ['admin', 'supervisor'] },
-  { to: '/reportes', label: 'Reportes', Icon: IconReport, roles: ['admin', 'supervisor', 'rrhh'] },
+  { to: '/reportes', label: 'Reportes', Icon: IconReport, roles: ['admin', 'supervisor'] },
 ];
 
 const NAV_ADMIN = [

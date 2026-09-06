@@ -9,7 +9,7 @@
 
 @layer components {
   .badge {
-    @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold whitespace-nowrap;
+    @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold whitespace-nowrap transition-transform;
   }
   .badge-dot {
     @apply w-1.5 h-1.5 rounded-full;
@@ -22,23 +22,26 @@
   .badge-neutral{ @apply bg-surface3 text-text2; }
 
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all duration-150 active:scale-[.97];
   }
-  .btn-primary { @apply bg-brand text-white hover:bg-[#3f7bef]; }
-  .btn-ghost   { @apply bg-surface2 text-text2 border border-border hover:text-text; }
+  .btn-primary {
+    @apply text-white bg-gradient-to-br from-brand to-brand2 hover:brightness-110 hover:shadow-lg hover:shadow-brand/25;
+  }
+  .btn-ghost   { @apply bg-surface2 text-text2 border border-border hover:text-text hover:border-text3; }
   .btn-danger  { @apply bg-redsoft text-red hover:bg-red hover:text-white; }
   .btn-disabled{ @apply bg-surface3 text-text3 cursor-not-allowed; }
 
   .card {
-    @apply bg-surface border border-border rounded-xl p-5;
+    @apply bg-surface border border-border rounded-2xl p-5 transition-shadow duration-200 animate-pop-in;
   }
+  .card:hover { @apply shadow-lg shadow-black/20; }
 
   .input {
-    @apply w-full bg-surface2 border border-border rounded-lg px-3 py-2.5 text-sm text-text placeholder-text3 outline-none focus:border-brand;
+    @apply w-full bg-surface2 border border-border rounded-xl px-3 py-2.5 text-sm text-text placeholder-text3 outline-none transition-colors focus:border-brand;
   }
 
   .navitem {
-    @apply flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[12.8px] font-medium text-text2 hover:bg-surface2 hover:text-text cursor-pointer;
+    @apply flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-[12.8px] font-medium text-text2 transition-colors duration-150 hover:bg-surface2 hover:text-text cursor-pointer;
   }
   .navitem.active { @apply bg-brandsoft text-brand; }
 
@@ -49,5 +52,11 @@
   table.datatable tbody td {
     @apply px-4 py-2.5 border-b border-bordersoft align-middle;
   }
+  table.datatable tbody tr { @apply transition-colors duration-100; }
   table.datatable tbody tr:hover { @apply bg-surface2; }
+
+  /* Breathing red glow — for pending/critical alerts that need attention */
+  .pulse-red {
+    @apply animate-breathe;
+  }
 }
