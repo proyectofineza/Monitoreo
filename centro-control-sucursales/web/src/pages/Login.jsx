@@ -89,13 +89,6 @@ export default function Login() {
             <IconLogout style={{ transform: 'scaleX(-1)' }} />
             {busy ? 'Ingresando…' : 'Ingresar'}
           </button>
-
-          <div className="text-[11.5px] text-text3 text-center mt-5">
-            Usuarios demo: <span className="font-mono">aduarte@fineza.demo</span> ·{' '}
-            <span className="font-mono">jperez@fineza.demo</span> ·{' '}
-            <span className="font-mono">mlopez@fineza.demo</span> ·{' '}
-            <span className="font-mono">crios@fineza.demo</span> — contraseña <span className="font-mono">Demo1234!</span>
-          </div>
         </form>
       </div>
     </div>
