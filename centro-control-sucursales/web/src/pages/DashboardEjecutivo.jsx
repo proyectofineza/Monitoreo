@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
-  BarChart, Bar, Cell,
+  BarChart, Bar, Cell, PieChart, Pie,
 } from 'recharts';
 import { supabase } from '../lib/supabaseClient.js';
 import Kpi from '../components/Kpi.jsx';
@@ -24,6 +24,20 @@ const tooltipStyle = {
   labelStyle: { color: '#8b96a8' },
   itemStyle: { color: '#e8ecf2' },
 };
+
+// Etiqueta de porcentaje dentro de cada porción de la torta/dona.
+function renderDonutLabel({ cx, cy, midAngle, innerRadius, outerRadius, percent }) {
+  if (!percent) return null;
+  const RADIAN = Math.PI / 180;
+  const radius = innerRadius + (outerRadius - innerRadius) * 0.55;
+  const x = cx + radius * Math.cos(-midAngle * RADIAN);
+  const y = cy + radius * Math.sin(-midAngle * RADIAN);
+  return (
+    <text x={x} y={y} fill="#0a0e14" fontSize={11} fontWeight={700} textAnchor="middle" dominantBaseline="central">
+      {`${Math.round(percent * 100)}%`}
+    </text>
+  );
+}
 
 export default function DashboardEjecutivo() {
   const navigate = useNavigate();
@@ -83,6 +97,20 @@ export default function DashboardEjecutivo() {
 
   const bottom5 = useMemo(() => [...scores].sort((a, b) => a.score - b.score).slice(0, 5), [scores]);
 
+  const estadoRed = useMemo(() => {
+    const counts = { buen_estado: 0, atencion: 0, critico: 0 };
+    scores.forEach((s) => {
+      if (s.score >= 80) counts.buen_estado += 1;
+      else if (s.score >= 60) counts.atencion += 1;
+      else counts.critico += 1;
+    });
+    return [
+      { name: 'Buen estado', value: counts.buen_estado, color: '#22e2a0' },
+      { name: 'Atención', value: counts.atencion, color: '#ff8a3d' },
+      { name: 'Requiere atención', value: counts.critico, color: '#ff5468' },
+    ];
+  }, [scores]);
+
   if (loading) return <div className="text-text3 text-sm py-10 text-center">Cargando…</div>;
 
   return (
@@ -100,7 +128,7 @@ export default function DashboardEjecutivo() {
         <Kpi label="Críticas (histórico)" value={totalCritical30} color="#ff5468" />
       </div>
 
-      <div className="grid grid-cols-[1.5fr_1fr] gap-4 mb-4">
+      <div className="grid grid-cols-[1.15fr_.85fr_.85fr] gap-4 mb-4">
         <div className="card">
           <div className="text-sm font-semibold mb-1">Incidencias registradas — últimos 14 días</div>
           <div className="text-[11.5px] text-text3 mb-3">Todas las sucursales</div>
@@ -138,6 +166,26 @@ export default function DashboardEjecutivo() {
             </BarChart>
           </ResponsiveContainer>
         </div>
+
+        <div className="card">
+          <div className="text-sm font-semibold mb-1">Estado de la red</div>
+          <div className="text-[11.5px] text-text3 mb-3">Sucursales según su Score actual</div>
+          <ResponsiveContainer width="100%" height={200}>
+            <PieChart>
+              <Pie data={estadoRed} dataKey="value" nameKey="name" innerRadius={48} outerRadius={72} paddingAngle={3} label={renderDonutLabel} labelLine={false}>
+                {estadoRed.map((e) => (
+                  <Cell key={e.name} fill={e.color} />
+                ))}
+              </Pie>
+              <Tooltip {...tooltipStyle} />
+            </PieChart>
+          </ResponsiveContainer>
+          <div className="flex justify-center gap-3 text-[11px] text-text3 mt-1 flex-wrap">
+            <LegendDot color="#22e2a0" label={`Buen estado (${estadoRed[0].value})`} />
+            <LegendDot color="#ff8a3d" label={`Atención (${estadoRed[1].value})`} />
+            <LegendDot color="#ff5468" label={`Requiere atención (${estadoRed[2].value})`} />
+          </div>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
@@ -168,6 +216,15 @@ export default function DashboardEjecutivo() {
           {criticalRecent.length === 0 && <div className="text-text3 text-sm py-4 text-center">Sin incidencias críticas recientes.</div>}
         </div>
       </div>
+    </div>
+  );
+}
+
+function LegendDot({ color, label }) {
+  return (
+    <div className="flex items-center gap-1.5">
+      <span className="w-2 h-2 rounded-full flex-none" style={{ background: color }} />
+      {label}
     </div>
   );
 }
