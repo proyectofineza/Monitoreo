@@ -23,6 +23,22 @@ const tooltipStyle = {
   itemStyle: { color: '#e8ecf2' },
 };
 
+const SEV_COLORS = { baja: '#8b96a8', media: '#ffc736', alta: '#ff8a3d', critica: '#ff5468' };
+
+// Etiqueta de porcentaje dentro de cada porción de la torta/dona.
+function renderDonutLabel({ cx, cy, midAngle, innerRadius, outerRadius, percent }) {
+  if (!percent) return null;
+  const RADIAN = Math.PI / 180;
+  const radius = innerRadius + (outerRadius - innerRadius) * 0.55;
+  const x = cx + radius * Math.cos(-midAngle * RADIAN);
+  const y = cy + radius * Math.sin(-midAngle * RADIAN);
+  return (
+    <text x={x} y={y} fill="#0a0e14" fontSize={11} fontWeight={700} textAnchor="middle" dominantBaseline="central">
+      {`${Math.round(percent * 100)}%`}
+    </text>
+  );
+}
+
 export default function DashboardRRHH() {
   const [loading, setLoading] = useState(true);
   const [branches, setBranches] = useState([]);
@@ -113,6 +129,20 @@ export default function DashboardRRHH() {
     return Object.values(map).sort((a, b) => b.controladas + b.pendientes - (a.controladas + a.pendientes));
   }, [rows]);
 
+  const severityBreakdown = useMemo(() => {
+    const visibleIds = new Set(rows.map((r) => r.branch.id));
+    const counts = { baja: 0, media: 0, alta: 0, critica: 0 };
+    incidents.forEach((i) => {
+      if (visibleIds.has(i.branch_id) && counts[i.severity] != null) counts[i.severity] += 1;
+    });
+    return [
+      { sev: 'baja', label: 'Baja', count: counts.baja },
+      { sev: 'media', label: 'Media', count: counts.media },
+      { sev: 'alta', label: 'Alta', count: counts.alta },
+      { sev: 'critica', label: 'Crítica', count: counts.critica },
+    ];
+  }, [incidents, rows]);
+
   const dailySeries = useMemo(() => {
     const from = new Date(`${dateFrom}T00:00:00`);
     const to = new Date(`${dateTo}T00:00:00`);
@@ -177,7 +207,7 @@ export default function DashboardRRHH() {
           <div className="text-[11.5px] text-text3 mb-2">Controladas vs. pendientes</div>
           <ResponsiveContainer width="100%" height={190}>
             <PieChart>
-              <Pie data={estadoPie} dataKey="value" nameKey="name" innerRadius={48} outerRadius={72} paddingAngle={3}>
+              <Pie data={estadoPie} dataKey="value" nameKey="name" innerRadius={48} outerRadius={72} paddingAngle={3} label={renderDonutLabel} labelLine={false}>
                 {estadoPie.map((e) => (
                   <Cell key={e.name} fill={e.color} />
                 ))}
@@ -196,7 +226,7 @@ export default function DashboardRRHH() {
           <div className="text-[11.5px] text-text3 mb-2">Con vs. sin incidencia</div>
           <ResponsiveContainer width="100%" height={190}>
             <PieChart>
-              <Pie data={incPie} dataKey="value" nameKey="name" innerRadius={48} outerRadius={72} paddingAngle={3}>
+              <Pie data={incPie} dataKey="value" nameKey="name" innerRadius={48} outerRadius={72} paddingAngle={3} label={renderDonutLabel} labelLine={false}>
                 {incPie.map((e) => (
                   <Cell key={e.name} fill={e.color} />
                 ))}
@@ -231,19 +261,39 @@ export default function DashboardRRHH() {
         </div>
       </div>
 
-      <div className="card mb-4">
-        <div className="text-sm font-semibold mb-1">Por ciudad</div>
-        <div className="text-[11.5px] text-text3 mb-3">Controladas vs. pendientes por ciudad</div>
-        <ResponsiveContainer width="100%" height={Math.max(180, byCity.length * 34)}>
-          <BarChart data={byCity} layout="vertical" margin={{ top: 4, right: 16, left: 8, bottom: 0 }}>
-            <CartesianGrid stroke="#1a212c" horizontal={false} />
-            <XAxis type="number" tick={{ fill: '#5a6474', fontSize: 10.5 }} axisLine={false} tickLine={false} allowDecimals={false} />
-            <YAxis type="category" dataKey="city" tick={{ fill: '#8b96a8', fontSize: 11 }} axisLine={false} tickLine={false} width={110} />
-            <Tooltip {...tooltipStyle} />
-            <Bar dataKey="controladas" stackId="a" fill="#22e2a0" />
-            <Bar dataKey="pendientes" stackId="a" fill="#ff5468" radius={[0, 4, 4, 0]} />
-          </BarChart>
-        </ResponsiveContainer>
+      <div className="grid grid-cols-2 gap-4 mb-4">
+        <div className="card">
+          <div className="text-sm font-semibold mb-1">Gravedad de incidencias</div>
+          <div className="text-[11.5px] text-text3 mb-3">Incidencias del filtro actual, por severidad</div>
+          <ResponsiveContainer width="100%" height={220}>
+            <BarChart data={severityBreakdown} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
+              <CartesianGrid stroke="#1a212c" vertical={false} />
+              <XAxis dataKey="label" tick={{ fill: '#5a6474', fontSize: 10.5 }} axisLine={{ stroke: '#232c3a' }} tickLine={false} />
+              <YAxis tick={{ fill: '#5a6474', fontSize: 10.5 }} axisLine={false} tickLine={false} allowDecimals={false} width={26} />
+              <Tooltip {...tooltipStyle} />
+              <Bar dataKey="count" radius={[4, 4, 0, 0]}>
+                {severityBreakdown.map((s) => (
+                  <Cell key={s.sev} fill={SEV_COLORS[s.sev]} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div className="card">
+          <div className="text-sm font-semibold mb-1">Por ciudad</div>
+          <div className="text-[11.5px] text-text3 mb-3">Controladas vs. pendientes por ciudad</div>
+          <ResponsiveContainer width="100%" height={220}>
+            <BarChart data={byCity} layout="vertical" margin={{ top: 4, right: 16, left: 8, bottom: 0 }}>
+              <CartesianGrid stroke="#1a212c" horizontal={false} />
+              <XAxis type="number" tick={{ fill: '#5a6474', fontSize: 10.5 }} axisLine={false} tickLine={false} allowDecimals={false} />
+              <YAxis type="category" dataKey="city" tick={{ fill: '#8b96a8', fontSize: 11 }} axisLine={false} tickLine={false} width={90} />
+              <Tooltip {...tooltipStyle} />
+              <Bar dataKey="controladas" stackId="a" fill="#22e2a0" />
+              <Bar dataKey="pendientes" stackId="a" fill="#ff5468" radius={[0, 4, 4, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
       </div>
 
       <div className="card !p-0 overflow-hidden">
