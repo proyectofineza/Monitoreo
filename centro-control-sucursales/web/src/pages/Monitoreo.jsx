@@ -1,9 +1,8 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient.js';
 import { useAuth } from '../lib/auth.jsx';
-import Badge from '../components/Badge.jsx';
-import { STATUS_LABEL, STATUS_BADGE, fmtRelative, SEVERITY_WEIGHT } from '../lib/format.js';
+import { STATUS_LABEL, fmtRelative, SEVERITY_WEIGHT } from '../lib/format.js';
 import { IconSearch } from '../components/icons.jsx';
 
 const startOfToday = () => {
@@ -11,6 +10,23 @@ const startOfToday = () => {
   d.setHours(0, 0, 0, 0);
   return d.toISOString();
 };
+
+// Colores del panal — mismos códigos de color que se usan en el resto de la app
+// para cada estado (ver STATUS_BADGE en lib/format.js).
+const STATUS_FILL = {
+  pendiente: '#ff5468',
+  en_revision: '#ffc736',
+  verificada: '#22e2a0',
+  con_incidencia: '#ff8a3d',
+};
+
+// Tamaño de cada celda hexagonal y geometría del panal.
+const HEX_W = 96;
+const HEX_H = 110;
+const GAP = 7;
+const OVERLAP = HEX_H * 0.25;
+const STEP = HEX_H - OVERLAP;
+const COL_OFFSET = STEP / 2;
 
 export default function Monitoreo() {
   const navigate = useNavigate();
@@ -70,12 +86,9 @@ export default function Monitoreo() {
         branch: b,
         status,
         check: today,
-        lastLabel: today
-          ? null
-          : last
-          ? fmtRelative(last.finished_at)
-          : 'Sin registro',
+        lastLabel: today ? null : last ? fmtRelative(last.finished_at) : 'Sin registro',
         operatorName: today ? profilesMap[today.operator_id] : null,
+        startedAt: today ? today.started_at : null,
         incInfo: incByBranch[b.id] || { count: 0, maxSeverity: null },
       };
     });
@@ -103,6 +116,7 @@ export default function Monitoreo() {
   }, [base, estado, search]);
 
   const canOperate = role === 'monitoreo' || role === 'admin';
+  const canOpenScore = role === 'admin' || role === 'supervisor';
 
   const startCheck = async (branchId, existingCheckId) => {
     if (existingCheckId) {
@@ -164,58 +178,141 @@ export default function Monitoreo() {
             </>
           )}
         </div>
+        <div className="ml-auto flex gap-3.5 text-[11px] text-text3 flex-wrap">
+          <LegendDot color={STATUS_FILL.pendiente} label="Pendiente" />
+          <LegendDot color={STATUS_FILL.en_revision} label="En revisión" />
+          <LegendDot color={STATUS_FILL.verificada} label="Verificada" />
+          <LegendDot color={STATUS_FILL.con_incidencia} label="Con incidencia" />
+        </div>
       </div>
 
-      <div className="card !p-0 overflow-hidden">
-        <table className="datatable">
-          <thead>
-            {tab === 'pendientes' ? (
-              <tr><th>Código</th><th>Sucursal</th><th>Ciudad</th><th>Estado</th><th>Última revisión</th><th></th></tr>
-            ) : (
-              <tr><th>Código</th><th>Sucursal</th><th>Operador</th><th>Resultado</th><th>Incidencias</th><th>Hora inicio</th></tr>
-            )}
-          </thead>
-          <tbody>
-            {loading && (
-              <tr><td colSpan={6} className="text-center text-text3 py-8">Cargando…</td></tr>
-            )}
-            {!loading && filtered.length === 0 && (
-              <tr><td colSpan={6} className="text-center text-text3 py-8">No hay sucursales para este filtro.</td></tr>
-            )}
-            {!loading && filtered.slice(0, 40).map((r) => (
-              <tr key={r.branch.id}>
-                <td className="font-mono text-text2">{r.branch.code}</td>
-                <td>{r.branch.name}</td>
-                {tab === 'pendientes' ? (
-                  <>
-                    <td className="text-text3">{r.branch.city}</td>
-                    <td><Badge className={STATUS_BADGE[r.status]} pulse={r.status === 'pendiente'}>{STATUS_LABEL[r.status]}</Badge></td>
-                    <td className="font-mono text-text3">{r.lastLabel ?? '—'}</td>
-                    <td className="text-right">
-                      {canOperate && (
-                        <button className="btn btn-primary !py-1.5 !px-3 !text-[11.5px]" onClick={() => startCheck(r.branch.id, r.check?.check_id)}>
-                          {r.status === 'en_revision' ? 'Continuar' : 'Iniciar revisión'}
-                        </button>
-                      )}
-                    </td>
-                  </>
-                ) : (
-                  <>
-                    <td>{r.operatorName || '—'}</td>
-                    <td><Badge className={STATUS_BADGE[r.status]}>{STATUS_LABEL[r.status]}</Badge></td>
-                    <td className="font-mono">{r.incInfo.count}</td>
-                    <td className="font-mono text-text3">{r.check ? new Date(r.check.started_at).toLocaleTimeString('es-PY', { hour: '2-digit', minute: '2-digit' }) : '—'}</td>
-                  </>
-                )}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        <div className="flex justify-between px-4 py-2.5 text-[11.5px] text-text3">
-          <span>Mostrando {Math.min(40, filtered.length)} de {filtered.length} sucursales</span>
+      <div className="card">
+        {loading && <div className="text-center text-text3 py-10 text-sm">Cargando…</div>}
+        {!loading && filtered.length === 0 && (
+          <div className="text-center text-text3 py-10 text-sm">No hay sucursales para este filtro.</div>
+        )}
+        {!loading && filtered.length > 0 && (
+          <HoneycombGrid
+            rows={filtered}
+            tab={tab}
+            canOperate={canOperate}
+            canOpenScore={canOpenScore}
+            onOperate={(r) => startCheck(r.branch.id, r.check?.check_id)}
+            onOpenScore={(r) => navigate(`/score/${r.branch.id}`)}
+          />
+        )}
+        <div className="flex justify-between px-1 pt-3 mt-1 border-t border-bordersoft text-[11.5px] text-text3">
+          <span>Mostrando {filtered.length} de {filtered.length} sucursales{estado !== 'todas' || search ? ' (filtradas)' : ''}</span>
           <span>Red completa: {branches.length} sucursales</span>
         </div>
       </div>
+    </div>
+  );
+}
+
+function HoneycombGrid({ rows, tab, canOperate, canOpenScore, onOperate, onOpenScore }) {
+  const containerRef = useRef(null);
+  const [width, setWidth] = useState(0);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const update = () => setWidth(el.getBoundingClientRect().width);
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  const numColumns = Math.max(1, Math.floor((width + GAP) / (HEX_W + GAP)) || 1);
+
+  const columns = useMemo(() => {
+    const cols = Array.from({ length: numColumns }, () => []);
+    rows.forEach((r, i) => cols[i % numColumns].push(r));
+    return cols;
+  }, [rows, numColumns]);
+
+  const clickable = tab === 'pendientes' ? canOperate : canOpenScore;
+
+  return (
+    <div ref={containerRef} className="flex justify-center" style={{ gap: GAP }}>
+      {columns.map((col, ci) => (
+        <div key={ci} style={{ width: HEX_W }}>
+          {col.map((r, ri) => (
+            <HexCell
+              key={r.branch.id}
+              r={r}
+              tab={tab}
+              clickable={clickable}
+              marginTop={ri === 0 ? (ci % 2 === 1 ? COL_OFFSET : 0) : -OVERLAP}
+              onClick={() => {
+                if (!clickable) return;
+                if (tab === 'pendientes') onOperate(r);
+                else onOpenScore(r);
+              }}
+            />
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function HexCell({ r, tab, clickable, marginTop, onClick }) {
+  const [hover, setHover] = useState(false);
+  const fill = STATUS_FILL[r.status];
+
+  return (
+    <div
+      className={`relative ${r.status === 'pendiente' ? 'animate-breathe' : ''}`}
+      style={{
+        width: HEX_W,
+        height: HEX_H,
+        marginTop,
+        clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)',
+        background: fill,
+        cursor: clickable ? 'pointer' : 'default',
+      }}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      onClick={onClick}
+    >
+      <div className="w-full h-full flex flex-col items-center justify-center px-2.5 transition-transform duration-150" style={{ transform: hover ? 'scale(1.08)' : 'scale(1)' }}>
+        <span className="font-mono font-bold text-[13px] leading-none" style={{ color: '#0a0e14' }}>
+          {r.branch.code}
+        </span>
+        <span className="text-[8.5px] font-semibold leading-tight text-center mt-1 truncate max-w-full" style={{ color: 'rgba(10,14,20,.72)' }}>
+          {r.branch.city}
+        </span>
+      </div>
+
+      {hover && (
+        <div
+          className="absolute z-20 bottom-[calc(100%+6px)] left-1/2 -translate-x-1/2 bg-surface2 border border-border rounded-lg px-3 py-2 text-[11.5px] whitespace-nowrap shadow-lg pointer-events-none"
+          style={{ color: '#e8ecf2' }}
+        >
+          <div className="font-semibold mb-0.5">Suc. {r.branch.code} — {r.branch.name}</div>
+          <div className="text-text3 mb-1">{r.branch.city}</div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full" style={{ background: fill }} />
+            <span>{STATUS_LABEL[r.status]}</span>
+          </div>
+          {tab === 'pendientes' ? (
+            <div className="text-text3 mt-0.5">Última revisión: {r.lastLabel ?? '—'}</div>
+          ) : (
+            <>
+              <div className="text-text3 mt-0.5">Operador: {r.operatorName || '—'}</div>
+              <div className="text-text3">Incidencias: {r.incInfo.count}</div>
+              <div className="text-text3">
+                Hora inicio: {r.startedAt ? new Date(r.startedAt).toLocaleTimeString('es-PY', { hour: '2-digit', minute: '2-digit' }) : '—'}
+              </div>
+            </>
+          )}
+          {clickable && (
+            <div className="text-brand font-semibold mt-1">{tab === 'pendientes' ? (r.status === 'en_revision' ? 'Click para continuar →' : 'Click para iniciar revisión →') : 'Click para ver ficha →'}</div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -228,6 +325,15 @@ function Chip({ active, onClick, label }) {
         active ? 'bg-brandsoft border-brand text-brand' : 'bg-surface border-border text-text2'
       }`}
     >
+      {label}
+    </div>
+  );
+}
+
+function LegendDot({ color, label }) {
+  return (
+    <div className="flex items-center gap-1.5">
+      <span className="w-2 h-2 rounded-full flex-none" style={{ background: color }} />
       {label}
     </div>
   );
