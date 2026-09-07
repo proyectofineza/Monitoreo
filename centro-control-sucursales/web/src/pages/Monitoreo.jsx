@@ -11,19 +11,33 @@ const startOfToday = () => {
   return d.toISOString();
 };
 
-// Colores del panal — mismos códigos de color que se usan en el resto de la app
-// para cada estado (ver STATUS_BADGE en lib/format.js).
-const STATUS_FILL = {
-  pendiente: '#ff5468',
-  en_revision: '#ffc736',
-  verificada: '#22e2a0',
-  con_incidencia: '#ff8a3d',
+// Estilo de cada celda del panal por estado — mismos códigos de color que se
+// usan en el resto de la app (ver STATUS_BADGE en lib/format.js), más el
+// color/intensidad/velocidad de su "respiración". Las que necesitan acción
+// (pendiente, con incidencia) laten más rápido y más fuerte; las que ya
+// están resueltas laten lento y suave, como un pulso de fondo.
+const STATUS_STYLE = {
+  pendiente: { fill: '#ff5468', glow: 'rgba(255,84,104,.9)', glowSize: '15px', duration: '1.6s' },
+  en_revision: { fill: '#ffc736', glow: 'rgba(255,199,54,.75)', glowSize: '10px', duration: '2.6s' },
+  verificada: { fill: '#22e2a0', glow: 'rgba(34,226,160,.55)', glowSize: '7px', duration: '3.6s' },
+  con_incidencia: { fill: '#ff8a3d', glow: 'rgba(255,138,61,.85)', glowSize: '13px', duration: '1.9s' },
 };
 
+// Aclara (percent > 0) u oscurece (percent < 0) un color #rrggbb, para armar
+// un degradé sutil dentro de cada hexágono en vez de un color plano.
+function shade(hex, percent) {
+  const num = parseInt(hex.slice(1), 16);
+  const clamp = (v) => Math.max(0, Math.min(255, v));
+  const r = clamp((num >> 16) + Math.round(2.55 * percent));
+  const g = clamp(((num >> 8) & 0xff) + Math.round(2.55 * percent));
+  const b = clamp((num & 0xff) + Math.round(2.55 * percent));
+  return `rgb(${r}, ${g}, ${b})`;
+}
+
 // Tamaño de cada celda hexagonal y geometría del panal.
-const HEX_W = 96;
-const HEX_H = 110;
-const GAP = 7;
+const HEX_W = 98;
+const HEX_H = 114;
+const GAP = 8;
 const OVERLAP = HEX_H * 0.25;
 const STEP = HEX_H - OVERLAP;
 const COL_OFFSET = STEP / 2;
@@ -179,10 +193,10 @@ export default function Monitoreo() {
           )}
         </div>
         <div className="ml-auto flex gap-3.5 text-[11px] text-text3 flex-wrap">
-          <LegendDot color={STATUS_FILL.pendiente} label="Pendiente" />
-          <LegendDot color={STATUS_FILL.en_revision} label="En revisión" />
-          <LegendDot color={STATUS_FILL.verificada} label="Verificada" />
-          <LegendDot color={STATUS_FILL.con_incidencia} label="Con incidencia" />
+          <LegendDot color={STATUS_STYLE.pendiente.fill} label="Pendiente" />
+          <LegendDot color={STATUS_STYLE.en_revision.fill} label="En revisión" />
+          <LegendDot color={STATUS_STYLE.verificada.fill} label="Verificada" />
+          <LegendDot color={STATUS_STYLE.con_incidencia.fill} label="Con incidencia" />
         </div>
       </div>
 
@@ -258,26 +272,44 @@ function HoneycombGrid({ rows, tab, canOperate, canOpenScore, onOperate, onOpenS
   );
 }
 
+const HEX_CLIP = 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)';
+
 function HexCell({ r, tab, clickable, marginTop, onClick }) {
   const [hover, setHover] = useState(false);
-  const fill = STATUS_FILL[r.status];
+  const cfg = STATUS_STYLE[r.status];
 
   return (
     <div
-      className={`relative ${r.status === 'pendiente' ? 'animate-breathe' : ''}`}
+      className="hex-breathe relative"
       style={{
         width: HEX_W,
         height: HEX_H,
         marginTop,
-        clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)',
-        background: fill,
+        clipPath: HEX_CLIP,
+        // El "gutter" oscuro entre celdas — hace que se lean como panal real
+        // en vez de un bloque de color continuo.
+        background: '#05070c',
         cursor: clickable ? 'pointer' : 'default',
+        '--glow-color': cfg.glow,
+        '--glow-size': cfg.glowSize,
+        animationDuration: cfg.duration,
       }}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
       onClick={onClick}
     >
-      <div className="w-full h-full flex flex-col items-center justify-center px-2.5 transition-transform duration-150" style={{ transform: hover ? 'scale(1.08)' : 'scale(1)' }}>
+      {/* Relleno interior, levemente más chico que la celda — deja ver el
+          gutter oscuro como borde y le da forma de panal real. */}
+      <div
+        className="absolute flex flex-col items-center justify-center px-2.5 transition-all duration-150"
+        style={{
+          inset: '5%',
+          clipPath: HEX_CLIP,
+          background: `linear-gradient(155deg, ${shade(cfg.fill, 20)} 0%, ${cfg.fill} 55%, ${shade(cfg.fill, -14)} 100%)`,
+          transform: hover ? 'scale(1.08)' : 'scale(1)',
+          filter: hover ? 'brightness(1.1)' : 'brightness(1)',
+        }}
+      >
         <span className="font-mono font-bold text-[13px] leading-none" style={{ color: '#0a0e14' }}>
           {r.branch.code}
         </span>
@@ -294,7 +326,7 @@ function HexCell({ r, tab, clickable, marginTop, onClick }) {
           <div className="font-semibold mb-0.5">Suc. {r.branch.code} — {r.branch.name}</div>
           <div className="text-text3 mb-1">{r.branch.city}</div>
           <div className="flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full" style={{ background: fill }} />
+            <span className="w-1.5 h-1.5 rounded-full" style={{ background: cfg.fill }} />
             <span>{STATUS_LABEL[r.status]}</span>
           </div>
           {tab === 'pendientes' ? (
