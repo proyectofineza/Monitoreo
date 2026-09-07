@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabaseClient.js';
 import { useAuth } from '../lib/auth.jsx';
 import { STATUS_LABEL, fmtRelative, SEVERITY_WEIGHT } from '../lib/format.js';
 import { IconSearch } from '../components/icons.jsx';
+import Kpi from '../components/Kpi.jsx';
 
 const startOfToday = () => {
   const d = new Date();
@@ -108,10 +109,11 @@ export default function Monitoreo() {
     });
   }, [branches, todayMap, lastMap, profilesMap, incByBranch]);
 
-  const base = useMemo(
-    () => rows.filter((r) => (tab === 'pendientes' ? ['pendiente', 'en_revision'].includes(r.status) : ['verificada', 'con_incidencia'].includes(r.status))),
-    [rows, tab]
-  );
+  const base = useMemo(() => {
+    if (tab === 'pendientes') return rows.filter((r) => ['pendiente', 'en_revision'].includes(r.status));
+    if (tab === 'verificadas') return rows.filter((r) => ['verificada', 'con_incidencia'].includes(r.status));
+    return [];
+  }, [rows, tab]);
 
   const counts = useMemo(() => {
     const c = { todas: base.length };
@@ -164,60 +166,140 @@ export default function Monitoreo() {
       </div>
 
       <div className="flex gap-1 bg-surface border border-border rounded-[10px] p-1 w-fit mb-4">
+        <div onClick={() => { setTab('verificadas'); setEstado('todas'); }} className={`px-4 py-2 rounded-[7px] text-[12.5px] font-semibold cursor-pointer ${tab === 'verificadas' ? 'bg-brand text-white' : 'text-text2'}`}>
+          Verificada
+        </div>
         <div onClick={() => { setTab('pendientes'); setEstado('todas'); }} className={`px-4 py-2 rounded-[7px] text-[12.5px] font-semibold cursor-pointer ${tab === 'pendientes' ? 'bg-brand text-white' : 'text-text2'}`}>
           Pendientes
         </div>
-        <div onClick={() => { setTab('historial'); setEstado('todas'); }} className={`px-4 py-2 rounded-[7px] text-[12.5px] font-semibold cursor-pointer ${tab === 'historial' ? 'bg-brand text-white' : 'text-text2'}`}>
-          Historial de hoy
+        <div onClick={() => setTab('general')} className={`px-4 py-2 rounded-[7px] text-[12.5px] font-semibold cursor-pointer ${tab === 'general' ? 'bg-brand text-white' : 'text-text2'}`}>
+          Vista General
         </div>
       </div>
 
-      <div className="flex items-center gap-2.5 mb-3.5 flex-wrap">
-        <div className="relative flex-1 min-w-[220px] max-w-[320px]">
-          <IconSearch className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text3" />
-          <input className="input !pl-8" placeholder="Buscar por código, nombre o ciudad…" value={search} onChange={(e) => setSearch(e.target.value)} />
-        </div>
-        <div className="flex gap-1.5 flex-wrap">
-          <Chip active={estado === 'todas'} onClick={() => setEstado('todas')} label={`Todas ${counts.todas}`} />
-          {tab === 'pendientes' && (
-            <>
-              <Chip active={estado === 'pendiente'} onClick={() => setEstado('pendiente')} label={`Pendiente ${counts.pendiente}`} />
-              <Chip active={estado === 'en_revision'} onClick={() => setEstado('en_revision')} label={`En revisión ${counts.en_revision}`} />
-            </>
-          )}
-          {tab === 'historial' && (
-            <>
-              <Chip active={estado === 'verificada'} onClick={() => setEstado('verificada')} label={`Verificada ${counts.verificada}`} />
-              <Chip active={estado === 'con_incidencia'} onClick={() => setEstado('con_incidencia')} label={`Con incidencia ${counts.con_incidencia}`} />
-            </>
-          )}
-        </div>
-        <div className="ml-auto flex gap-3.5 text-[11px] text-text3 flex-wrap">
-          <LegendDot color={STATUS_STYLE.pendiente.fill} label="Pendiente" />
-          <LegendDot color={STATUS_STYLE.en_revision.fill} label="En revisión" />
-          <LegendDot color={STATUS_STYLE.verificada.fill} label="Verificada" />
-          <LegendDot color={STATUS_STYLE.con_incidencia.fill} label="Con incidencia" />
-        </div>
+      {tab === 'general' ? (
+        <GeneralView rows={rows} totalBranches={branches.length} />
+      ) : (
+        <>
+          <div className="flex items-center gap-2.5 mb-3.5 flex-wrap">
+            <div className="relative flex-1 min-w-[220px] max-w-[320px]">
+              <IconSearch className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text3" />
+              <input className="input !pl-8" placeholder="Buscar por código, nombre o ciudad…" value={search} onChange={(e) => setSearch(e.target.value)} />
+            </div>
+            <div className="flex gap-1.5 flex-wrap">
+              <Chip active={estado === 'todas'} onClick={() => setEstado('todas')} label={`Todas ${counts.todas}`} />
+              {tab === 'pendientes' && (
+                <>
+                  <Chip active={estado === 'pendiente'} onClick={() => setEstado('pendiente')} label={`Pendiente ${counts.pendiente}`} />
+                  <Chip active={estado === 'en_revision'} onClick={() => setEstado('en_revision')} label={`En revisión ${counts.en_revision}`} />
+                </>
+              )}
+              {tab === 'verificadas' && (
+                <>
+                  <Chip active={estado === 'verificada'} onClick={() => setEstado('verificada')} label={`Verificada ${counts.verificada}`} />
+                  <Chip active={estado === 'con_incidencia'} onClick={() => setEstado('con_incidencia')} label={`Con incidencia ${counts.con_incidencia}`} />
+                </>
+              )}
+            </div>
+            <div className="ml-auto flex gap-3.5 text-[11px] text-text3 flex-wrap">
+              <LegendDot color={STATUS_STYLE.pendiente.fill} label="Pendiente" />
+              <LegendDot color={STATUS_STYLE.en_revision.fill} label="En revisión" />
+              <LegendDot color={STATUS_STYLE.verificada.fill} label="Verificada" />
+              <LegendDot color={STATUS_STYLE.con_incidencia.fill} label="Con incidencia" />
+            </div>
+          </div>
+
+          <div className="card">
+            {loading && <div className="text-center text-text3 py-10 text-sm">Cargando…</div>}
+            {!loading && filtered.length === 0 && (
+              <div className="text-center text-text3 py-10 text-sm">No hay sucursales para este filtro.</div>
+            )}
+            {!loading && filtered.length > 0 && (
+              <HoneycombGrid
+                rows={filtered}
+                tab={tab}
+                canOperate={canOperate}
+                canOpenScore={canOpenScore}
+                onOperate={(r) => startCheck(r.branch.id, r.check?.check_id)}
+                onOpenScore={(r) => navigate(`/score/${r.branch.id}`)}
+              />
+            )}
+            <div className="flex justify-between px-1 pt-3 mt-1 border-t border-bordersoft text-[11.5px] text-text3">
+              <span>Mostrando {filtered.length} de {filtered.length} sucursales{estado !== 'todas' || search ? ' (filtradas)' : ''}</span>
+              <span>Red completa: {branches.length} sucursales</span>
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+function GeneralView({ rows, totalBranches }) {
+  const verificadas = rows.filter((r) => ['verificada', 'con_incidencia'].includes(r.status)).length;
+  const pendientes = rows.filter((r) => r.status === 'pendiente').length;
+  const enRevision = rows.filter((r) => r.status === 'en_revision').length;
+  const conIncidencia = rows.filter((r) => r.status === 'con_incidencia').length;
+  const pct = totalBranches ? Math.round((verificadas / totalBranches) * 100) : 0;
+
+  const byCity = useMemo(() => {
+    const map = {};
+    rows.forEach((r) => {
+      const city = r.branch.city || 'Sin ciudad';
+      if (!map[city]) map[city] = { city, total: 0, verificadas: 0, conIncidencia: 0 };
+      map[city].total += 1;
+      if (['verificada', 'con_incidencia'].includes(r.status)) map[city].verificadas += 1;
+      if (r.status === 'con_incidencia') map[city].conIncidencia += 1;
+    });
+    return Object.values(map)
+      .map((c) => ({ ...c, pct: c.total ? Math.round((c.verificadas / c.total) * 100) : 0 }))
+      .sort((a, b) => a.pct - b.pct);
+  }, [rows]);
+
+  return (
+    <div>
+      <div className="grid grid-cols-5 gap-3 mb-4">
+        <Kpi label="Sucursales activas" value={totalBranches} />
+        <Kpi
+          label="Verificadas hoy"
+          value={`${verificadas}/${totalBranches}`}
+          sub={`${pct}% de cobertura`}
+          color={pct >= 80 ? STATUS_STYLE.verificada.fill : pct >= 50 ? STATUS_STYLE.en_revision.fill : STATUS_STYLE.pendiente.fill}
+        />
+        <Kpi label="Pendientes" value={pendientes} color={STATUS_STYLE.pendiente.fill} pulse={pendientes > 0} />
+        <Kpi label="En revisión" value={enRevision} color={STATUS_STYLE.en_revision.fill} />
+        <Kpi label="Con incidencia" value={conIncidencia} color={STATUS_STYLE.con_incidencia.fill} />
       </div>
 
       <div className="card">
-        {loading && <div className="text-center text-text3 py-10 text-sm">Cargando…</div>}
-        {!loading && filtered.length === 0 && (
-          <div className="text-center text-text3 py-10 text-sm">No hay sucursales para este filtro.</div>
-        )}
-        {!loading && filtered.length > 0 && (
-          <HoneycombGrid
-            rows={filtered}
-            tab={tab}
-            canOperate={canOperate}
-            canOpenScore={canOpenScore}
-            onOperate={(r) => startCheck(r.branch.id, r.check?.check_id)}
-            onOpenScore={(r) => navigate(`/score/${r.branch.id}`)}
-          />
-        )}
-        <div className="flex justify-between px-1 pt-3 mt-1 border-t border-bordersoft text-[11.5px] text-text3">
-          <span>Mostrando {filtered.length} de {filtered.length} sucursales{estado !== 'todas' || search ? ' (filtradas)' : ''}</span>
-          <span>Red completa: {branches.length} sucursales</span>
+        <div className="text-sm font-semibold mb-1">Cobertura por ciudad</div>
+        <div className="text-[11.5px] text-text3 mb-3.5">Sucursales verificadas hoy sobre el total activo — de menor a mayor cobertura</div>
+        <div className="flex flex-col gap-3">
+          {byCity.map((c) => (
+            <div key={c.city}>
+              <div className="flex justify-between items-center text-[12.5px] mb-1">
+                <span className="font-medium">{c.city}</span>
+                <span className="text-text3 font-mono">
+                  {c.verificadas}/{c.total} · {c.pct}%
+                  {c.conIncidencia > 0 && (
+                    <span className="ml-2" style={{ color: STATUS_STYLE.con_incidencia.fill }}>
+                      ⚠ {c.conIncidencia}
+                    </span>
+                  )}
+                </span>
+              </div>
+              <div className="h-2 rounded-full bg-surface3 overflow-hidden">
+                <div
+                  className="h-full rounded-full transition-all duration-300"
+                  style={{
+                    width: `${c.pct}%`,
+                    background: c.pct >= 80 ? STATUS_STYLE.verificada.fill : c.pct >= 50 ? STATUS_STYLE.en_revision.fill : STATUS_STYLE.pendiente.fill,
+                  }}
+                />
+              </div>
+            </div>
+          ))}
+          {byCity.length === 0 && <div className="text-text3 text-sm py-4 text-center">Sin datos.</div>}
         </div>
       </div>
     </div>
