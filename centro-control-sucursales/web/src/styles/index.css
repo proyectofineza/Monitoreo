@@ -60,3 +60,27 @@
     @apply animate-breathe;
   }
 }
+
+/* Tiñe los tiles de OpenStreetMap (claros) para que se vean oscuros, acorde al resto de la app.
+   Solo afecta el panel de tiles — los marcadores (sucursales) no se ven afectados. */
+.map-dark-tiles .leaflet-tile-pane {
+  filter: invert(1) hue-rotate(180deg) brightness(0.92) contrast(0.88) saturate(0.9);
+}
+
+/* Panal de sucursales (Monitoreo) — cada hexágono "respira" con un resplandor
+   de su propio color de estado. Se usa filter: drop-shadow (no box-shadow)
+   porque el clip-path del hexágono recortaría una sombra normal; drop-shadow
+   sigue la silueta real de la figura, así el brillo queda con forma de hexágono. */
+@keyframes hexBreathe {
+  0%, 100% {
+    filter: drop-shadow(0 0 0px var(--glow-color, transparent));
+  }
+  50% {
+    filter: drop-shadow(0 0 var(--glow-size, 10px) var(--glow-color, transparent));
+  }
+}
+.hex-breathe {
+  animation-name: hexBreathe;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
