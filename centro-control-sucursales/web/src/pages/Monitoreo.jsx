@@ -5,12 +5,7 @@ import { useAuth } from '../lib/auth.jsx';
 import { STATUS_LABEL, fmtRelative, SEVERITY_WEIGHT } from '../lib/format.js';
 import { IconSearch } from '../components/icons.jsx';
 import Kpi from '../components/Kpi.jsx';
-
-const startOfToday = () => {
-  const d = new Date();
-  d.setHours(0, 0, 0, 0);
-  return d.toISOString();
-};
+import { currentShiftStart } from '../lib/shift.js';
 
 // Estilo de cada celda del panal por estado — mismos códigos de color que se
 // usan en el resto de la app (ver STATUS_BADGE en lib/format.js), más el
@@ -63,7 +58,7 @@ export default function Monitoreo() {
       supabase.from('branch_today_check').select('*'),
       supabase.from('branch_last_check').select('*'),
       supabase.from('profiles').select('id, full_name'),
-      supabase.from('incidents').select('branch_id, severity').gte('occurred_at', startOfToday()).is('deleted_at', null),
+      supabase.from('incidents').select('branch_id, severity').gte('occurred_at', currentShiftStart().toISOString()).is('deleted_at', null),
     ]);
     setBranches(br || []);
     const tMap = {};
