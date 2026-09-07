@@ -112,6 +112,7 @@ export default function Monitoreo() {
   const base = useMemo(() => {
     if (tab === 'pendientes') return rows.filter((r) => ['pendiente', 'en_revision'].includes(r.status));
     if (tab === 'verificadas') return rows.filter((r) => ['verificada', 'con_incidencia'].includes(r.status));
+    if (tab === 'general') return rows;
     return [];
   }, [rows, tab]);
 
@@ -172,12 +173,15 @@ export default function Monitoreo() {
         <div onClick={() => { setTab('pendientes'); setEstado('todas'); }} className={`px-4 py-2 rounded-[7px] text-[12.5px] font-semibold cursor-pointer ${tab === 'pendientes' ? 'bg-brand text-white' : 'text-text2'}`}>
           Pendientes
         </div>
-        <div onClick={() => setTab('general')} className={`px-4 py-2 rounded-[7px] text-[12.5px] font-semibold cursor-pointer ${tab === 'general' ? 'bg-brand text-white' : 'text-text2'}`}>
+        <div onClick={() => { setTab('general'); setEstado('todas'); }} className={`px-4 py-2 rounded-[7px] text-[12.5px] font-semibold cursor-pointer ${tab === 'general' ? 'bg-brand text-white' : 'text-text2'}`}>
           Vista General
+        </div>
+        <div onClick={() => setTab('resumen')} className={`px-4 py-2 rounded-[7px] text-[12.5px] font-semibold cursor-pointer ${tab === 'resumen' ? 'bg-brand text-white' : 'text-text2'}`}>
+          Resumen
         </div>
       </div>
 
-      {tab === 'general' ? (
+      {tab === 'resumen' ? (
         <GeneralView rows={rows} totalBranches={branches.length} />
       ) : (
         <>
@@ -200,6 +204,14 @@ export default function Monitoreo() {
                   <Chip active={estado === 'con_incidencia'} onClick={() => setEstado('con_incidencia')} label={`Con incidencia ${counts.con_incidencia}`} />
                 </>
               )}
+              {tab === 'general' && (
+                <>
+                  <Chip active={estado === 'pendiente'} onClick={() => setEstado('pendiente')} label={`Pendiente ${counts.pendiente}`} />
+                  <Chip active={estado === 'en_revision'} onClick={() => setEstado('en_revision')} label={`En revisión ${counts.en_revision}`} />
+                  <Chip active={estado === 'verificada'} onClick={() => setEstado('verificada')} label={`Verificada ${counts.verificada}`} />
+                  <Chip active={estado === 'con_incidencia'} onClick={() => setEstado('con_incidencia')} label={`Con incidencia ${counts.con_incidencia}`} />
+                </>
+              )}
             </div>
             <div className="ml-auto flex gap-3.5 text-[11px] text-text3 flex-wrap">
               <LegendDot color={STATUS_STYLE.pendiente.fill} label="Pendiente" />
@@ -217,7 +229,6 @@ export default function Monitoreo() {
             {!loading && filtered.length > 0 && (
               <HoneycombGrid
                 rows={filtered}
-                tab={tab}
                 canOperate={canOperate}
                 canOpenScore={canOpenScore}
                 onOperate={(r) => startCheck(r.branch.id, r.check?.check_id)}
@@ -306,7 +317,9 @@ function GeneralView({ rows, totalBranches }) {
   );
 }
 
-function HoneycombGrid({ rows, tab, canOperate, canOpenScore, onOperate, onOpenScore }) {
+const PENDING_STATUSES = ['pendiente', 'en_revision'];
+
+function HoneycombGrid({ rows, canOperate, canOpenScore, onOperate, onOpenScore }) {
   const containerRef = useRef(null);
   const [width, setWidth] = useState(0);
 
@@ -328,26 +341,32 @@ function HoneycombGrid({ rows, tab, canOperate, canOpenScore, onOperate, onOpenS
     return cols;
   }, [rows, numColumns]);
 
-  const clickable = tab === 'pendientes' ? canOperate : canOpenScore;
-
   return (
     <div ref={containerRef} className="flex justify-center" style={{ gap: GAP }}>
       {columns.map((col, ci) => (
         <div key={ci} style={{ width: HEX_W }}>
-          {col.map((r, ri) => (
-            <HexCell
-              key={r.branch.id}
-              r={r}
-              tab={tab}
-              clickable={clickable}
-              marginTop={ri === 0 ? (ci % 2 === 1 ? COL_OFFSET : 0) : -OVERLAP}
-              onClick={() => {
-                if (!clickable) return;
-                if (tab === 'pendientes') onOperate(r);
-                else onOpenScore(r);
-              }}
-            />
-          ))}
+          {col.map((r, ri) => {
+            // Cada celda decide su propia acción según SU estado — así "Vista
+            // General", que mezcla todos los estados en un solo panal, actúa
+            // bien celda por celda (iniciar revisión en las pendientes, ver
+            // ficha en las ya verificadas).
+            const isPending = PENDING_STATUSES.includes(r.status);
+            const clickable = isPending ? canOperate : canOpenScore;
+            return (
+              <HexCell
+                key={r.branch.id}
+                r={r}
+                isPending={isPending}
+                clickable={clickable}
+                marginTop={ri === 0 ? (ci % 2 === 1 ? COL_OFFSET : 0) : -OVERLAP}
+                onClick={() => {
+                  if (!clickable) return;
+                  if (isPending) onOperate(r);
+                  else onOpenScore(r);
+                }}
+              />
+            );
+          })}
         </div>
       ))}
     </div>
@@ -356,7 +375,7 @@ function HoneycombGrid({ rows, tab, canOperate, canOpenScore, onOperate, onOpenS
 
 const HEX_CLIP = 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)';
 
-function HexCell({ r, tab, clickable, marginTop, onClick }) {
+function HexCell({ r, isPending, clickable, marginTop, onClick }) {
   const [hover, setHover] = useState(false);
   const cfg = STATUS_STYLE[r.status];
 
@@ -411,7 +430,7 @@ function HexCell({ r, tab, clickable, marginTop, onClick }) {
             <span className="w-1.5 h-1.5 rounded-full" style={{ background: cfg.fill }} />
             <span>{STATUS_LABEL[r.status]}</span>
           </div>
-          {tab === 'pendientes' ? (
+          {isPending ? (
             <div className="text-text3 mt-0.5">Última revisión: {r.lastLabel ?? '—'}</div>
           ) : (
             <>
@@ -423,7 +442,7 @@ function HexCell({ r, tab, clickable, marginTop, onClick }) {
             </>
           )}
           {clickable && (
-            <div className="text-brand font-semibold mt-1">{tab === 'pendientes' ? (r.status === 'en_revision' ? 'Click para continuar →' : 'Click para iniciar revisión →') : 'Click para ver ficha →'}</div>
+            <div className="text-brand font-semibold mt-1">{isPending ? (r.status === 'en_revision' ? 'Click para continuar →' : 'Click para iniciar revisión →') : 'Click para ver ficha →'}</div>
           )}
         </div>
       )}

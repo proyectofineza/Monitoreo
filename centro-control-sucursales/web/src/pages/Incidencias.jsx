@@ -22,8 +22,14 @@ function isoDate(d) {
 const ESTADOS = [
   { id: 'todas', label: 'Todas' },
   { id: 'abierta', label: 'Abiertas' },
-  { id: 'cerrada', label: 'Cerradas' },
+  { id: 'cerrada', label: 'Solucionadas' },
 ];
+// 'abierta'/'cerrada' son los valores que guarda la base — acá solo se
+// ajustan las etiquetas que ve el usuario.
+const STATUS_DISPLAY = {
+  abierta: { label: 'Abierta', badge: 'badge-amber' },
+  cerrada: { label: 'Solucionada', badge: 'badge-green' },
+};
 const GRAVEDADES = [
   { id: 'todas', label: 'Todas' },
   { id: 'baja', label: 'Baja' },
@@ -86,9 +92,10 @@ export default function Incidencias() {
   }, [rows, search]);
 
   const closeIncident = async (id) => {
+    if (!window.confirm('¿Confirmás que esta incidencia ya fue solucionada?')) return;
     const { error } = await supabase.from('incidents').update({ status: 'cerrada' }).eq('id', id);
     if (error) {
-      alert('No se pudo cerrar la incidencia: ' + error.message);
+      alert('No se pudo marcar como solucionada: ' + error.message);
       return;
     }
     setRows((prev) => prev.map((r) => (r.id === id ? { ...r, status: 'cerrada' } : r)));
@@ -230,11 +237,11 @@ export default function Incidencias() {
                 <td>{r.type_label}</td>
                 <td><Badge className={SEVERITY_BADGE[r.severity]}>{SEVERITY_LABEL[r.severity]}</Badge></td>
                 <td className="text-text3">{r.employee_name || r.employee_name_freeform || '—'}</td>
-                <td className="capitalize">{r.status}</td>
+                <td><Badge className={STATUS_DISPLAY[r.status]?.badge}>{STATUS_DISPLAY[r.status]?.label || r.status}</Badge></td>
                 <td className="text-right flex items-center justify-end gap-2.5">
                   <Link to={`/score/${r.branch_id}`} className="text-brand text-[11.5px] hover:underline">Sucursal</Link>
-                  {role === 'admin' && r.status === 'abierta' && (
-                    <button className="text-[11.5px] text-green hover:underline" onClick={() => closeIncident(r.id)}>Cerrar</button>
+                  {(role === 'admin' || role === 'supervisor') && r.status === 'abierta' && (
+                    <button className="text-[11.5px] text-green hover:underline font-semibold" onClick={() => closeIncident(r.id)}>✓ Marcar solucionada</button>
                   )}
                 </td>
               </tr>
