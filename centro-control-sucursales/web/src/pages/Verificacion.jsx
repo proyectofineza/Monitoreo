@@ -247,8 +247,8 @@ export default function Verificacion() {
       )}
 
       {phase === 'confirm_sin' && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-10">
-          <div className="card w-[380px]">
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[60] p-4">
+          <div className="card w-full max-w-[380px]">
             <div className="font-bold text-[15.5px] mb-2">Confirmar verificación</div>
             <p className="text-[13px] text-text2 leading-relaxed mb-5">
               ¿Confirmás que la sucursal <b className="text-text">{branch.code} — {branch.name}</b> fue verificada <b className="text-green">sin incidencias</b>?

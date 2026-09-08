@@ -75,7 +75,7 @@ export default function Score() {
         <Link to="/ranking" className="text-brand text-[12.5px] hover:underline">← Volver al ranking</Link>
       </div>
 
-      <div className="grid grid-cols-[.9fr_1.4fr_1fr] gap-4 mb-4 items-stretch">
+      <div className="grid grid-cols-1 lg:grid-cols-[.9fr_1.4fr_1fr] gap-4 mb-4 items-stretch">
         <div className="card flex flex-col items-center text-center">
           <svg width="130" height="130" viewBox="0 0 130 130">
             <circle cx="65" cy="65" r="54" fill="none" stroke="#1c2430" strokeWidth="12" />

@@ -140,7 +140,7 @@ export default function Historial() {
         </div>
       </div>
 
-      <div className="grid grid-cols-4 gap-3 mb-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
         <Kpi label="Verificaciones" value={filtered.length} />
         <Kpi label="Con incidencia" value={filtered.filter((c) => c.status === 'con_incidencia').length} />
         <Kpi label="Incidencias totales" value={totalIncidencias} color="#ffc736" />
@@ -188,7 +188,8 @@ export default function Historial() {
       </div>
 
       <div className="card !p-0 overflow-hidden">
-        <table className="datatable">
+        <div className="overflow-x-auto">
+          <table className="datatable">
           <thead>
             <tr>
               <th>Fecha</th><th>Sucursal</th><th>Ciudad</th><th>Operador</th>
@@ -200,7 +201,7 @@ export default function Historial() {
             {!loading && filtered.length === 0 && (
               <tr><td colSpan={8} className="text-center text-text3 py-8">No hay verificaciones para este filtro.</td></tr>
             )}
-            {!loading && filtered.slice(0, 60).map((c) => (
+            {!loading && filtered.map((c) => (
               <tr key={c.id}>
                 <td className="font-mono text-text3">{fmtDateTime(c.started_at)}</td>
                 <td>{c.branches ? `${c.branches.code} — ${c.branches.name}` : '—'}</td>
@@ -224,9 +225,10 @@ export default function Historial() {
               </tr>
             ))}
           </tbody>
-        </table>
+          </table>
+        </div>
         <div className="flex justify-between px-4 py-2.5 text-[11.5px] text-text3">
-          <span>Mostrando {Math.min(60, filtered.length)} de {filtered.length} verificaciones</span>
+          <span>Mostrando {filtered.length} de {filtered.length} verificaciones</span>
           <span>Rango: {dateFrom} → {dateTo}</span>
         </div>
       </div>

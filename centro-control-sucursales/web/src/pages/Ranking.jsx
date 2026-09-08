@@ -76,9 +76,10 @@ export default function Ranking() {
         ))}
       </div>
 
-      <div className="grid grid-cols-[1.6fr_1fr] gap-4 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-[1.6fr_1fr] gap-4 items-start">
         <div className="card !p-0 overflow-hidden">
-          <table className="datatable">
+          <div className="overflow-x-auto">
+            <table className="datatable">
             <thead>
               <tr><th>#</th><th>Sucursal</th><th>Ciudad</th><th>Score</th><th>Incid.</th><th>Críticas</th><th>Tendencia</th></tr>
             </thead>
@@ -98,7 +99,8 @@ export default function Ranking() {
                 </tr>
               ))}
             </tbody>
-          </table>
+            </table>
+          </div>
         </div>
 
         <div className="flex flex-col gap-4">

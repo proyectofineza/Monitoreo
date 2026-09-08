@@ -145,14 +145,14 @@ export default function Incidencias() {
         </button>
       </div>
 
-      <div className="grid grid-cols-4 gap-3 mb-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
         <Kpi label="Incidencias (filtro actual)" value={filtered.length} />
         <Kpi label="Abiertas" value={abiertas} color="#ffc736" />
         <Kpi label="Críticas" value={criticas} color="#ff5468" />
         <Kpi label="Promedio por sucursal" value={avgPerBranch} sub={`${branchesInvolved} sucursales afectadas`} />
       </div>
 
-      <div className="grid grid-cols-2 gap-4 mb-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
         <div className="card">
           <div className="text-sm font-semibold mb-1">Por gravedad</div>
           <div className="text-[11.5px] text-text3 mb-3">Distribución del período filtrado</div>
@@ -223,14 +223,15 @@ export default function Incidencias() {
       </div>
 
       <div className="card !p-0 overflow-hidden">
-        <table className="datatable">
+        <div className="overflow-x-auto">
+          <table className="datatable">
           <thead>
             <tr><th>Fecha</th><th>Sucursal</th><th>Tipo</th><th>Gravedad</th><th>Empleado</th><th>Estado</th><th></th></tr>
           </thead>
           <tbody>
             {loading && <tr><td colSpan={7} className="text-center text-text3 py-8">Cargando…</td></tr>}
             {!loading && filtered.length === 0 && <tr><td colSpan={7} className="text-center text-text3 py-8">No hay incidencias para este filtro.</td></tr>}
-            {!loading && filtered.slice(0, 60).map((r) => (
+            {!loading && filtered.map((r) => (
               <tr key={r.id}>
                 <td className="font-mono text-text3">{fmtDateTime(r.occurred_at)}</td>
                 <td>{r.branch_code} — {r.branch_name}</td>
@@ -247,9 +248,10 @@ export default function Incidencias() {
               </tr>
             ))}
           </tbody>
-        </table>
+          </table>
+        </div>
         <div className="flex justify-between px-4 py-2.5 text-[11.5px] text-text3">
-          <span>Mostrando {Math.min(60, filtered.length)} de {filtered.length} incidencias</span>
+          <span>Mostrando {filtered.length} de {filtered.length} incidencias{filtered.length >= 500 ? ' (puede haber más — acotá el rango de fechas)' : ''}</span>
           <span>Rango: {dateFrom} → {dateTo}</span>
         </div>
       </div>

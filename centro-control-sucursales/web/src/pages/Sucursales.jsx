@@ -181,7 +181,7 @@ export default function Sucursales() {
       {showForm && isAdmin && (
         <div className="card mb-4">
           <div className="text-sm font-semibold mb-3.5">{form.id ? 'Editar sucursal' : 'Nueva sucursal'}</div>
-          <div className="grid grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <LabeledInput label="Código" value={form.code} onChange={(v) => setForm({ ...form, code: v })} />
             <LabeledInput label="Nombre" value={form.name} onChange={(v) => setForm({ ...form, name: v })} className="col-span-2" />
             <LabeledInput label="Ciudad" value={form.city} onChange={(v) => setForm({ ...form, city: v })} />
@@ -215,14 +215,15 @@ export default function Sucursales() {
       </div>
 
       <div className="card !p-0 overflow-hidden">
-        <table className="datatable">
+        <div className="overflow-x-auto">
+          <table className="datatable">
           <thead>
             <tr><th>Código</th><th>Sucursal</th><th>Ciudad</th><th>Cámaras</th><th>Horario</th><th>Estado</th>{isAdmin && <th></th>}</tr>
           </thead>
           <tbody>
             {loading && <tr><td colSpan={7} className="text-center text-text3 py-8">Cargando…</td></tr>}
             {!loading && filtered.length === 0 && <tr><td colSpan={7} className="text-center text-text3 py-8">No hay sucursales para este filtro.</td></tr>}
-            {!loading && filtered.slice(0, 60).map((b) => (
+            {!loading && filtered.map((b) => (
               <tr key={b.id}>
                 <td className="font-mono text-text2">{b.code}</td>
                 <td>{b.name}</td>
@@ -240,9 +241,10 @@ export default function Sucursales() {
               </tr>
             ))}
           </tbody>
-        </table>
+          </table>
+        </div>
         <div className="flex justify-between px-4 py-2.5 text-[11.5px] text-text3">
-          <span>Mostrando {Math.min(60, filtered.length)} de {filtered.length} sucursales</span>
+          <span>Mostrando {filtered.length} de {filtered.length} sucursales{cityFilter || search ? ' (filtradas)' : ''}</span>
           <span>Red completa: {branches.length} sucursales</span>
         </div>
       </div>

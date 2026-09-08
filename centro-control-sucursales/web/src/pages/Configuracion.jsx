@@ -87,13 +87,13 @@ export default function Configuracion() {
         <h1 className="text-[22px] font-bold tracking-tight">Configuración</h1>
       </div>
 
-      <div className="grid grid-cols-[1.3fr_1fr] gap-4 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-[1.3fr_1fr] gap-4 items-start">
         <div className="card">
           <div className="text-sm font-semibold mb-1">Fórmula de cálculo del Score</div>
           <div className="text-[11.5px] text-text3 mb-4">
             Score = base − Σ(descuentos por gravedad) − penalización por recurrencia, dentro de la ventana configurada.
           </div>
-          <div className="grid grid-cols-2 gap-3.5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             {FORMULA_FIELDS.map((f) => (
               <div key={f.key}>
                 <div className="text-[11.5px] font-medium mb-1">{f.label}</div>

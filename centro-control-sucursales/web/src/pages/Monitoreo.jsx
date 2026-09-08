@@ -264,7 +264,7 @@ function GeneralView({ rows, totalBranches }) {
 
   return (
     <div>
-      <div className="grid grid-cols-5 gap-3 mb-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-4">
         <Kpi label="Sucursales activas" value={totalBranches} />
         <Kpi
           label="Verificadas hoy"

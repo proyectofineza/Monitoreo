@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabaseClient.js';
 import Kpi from '../components/Kpi.jsx';
 import Badge from '../components/Badge.jsx';
 import { scoreColor, fmtRelative } from '../lib/format.js';
+import { currentShiftStart } from '../lib/shift.js';
 
 export default function DashboardSupervisor() {
   const navigate = useNavigate();
@@ -19,14 +20,12 @@ export default function DashboardSupervisor() {
   useEffect(() => {
     (async () => {
       setLoading(true);
-      const startOfDay = new Date();
-      startOfDay.setHours(0, 0, 0, 0);
       const [{ data: br }, { data: today }, { data: last }, { data: profs }, { data: incs }, { data: tr }, { data: sc }] = await Promise.all([
         supabase.from('branches').select('*').eq('active', true).order('code'),
         supabase.from('branch_today_check').select('*'),
         supabase.from('branch_last_check').select('*'),
         supabase.from('profiles').select('id, full_name, role'),
-        supabase.from('incidents').select('branch_id, severity').gte('occurred_at', startOfDay.toISOString()).is('deleted_at', null),
+        supabase.from('incidents').select('branch_id, severity').gte('occurred_at', currentShiftStart().toISOString()).is('deleted_at', null),
         supabase.from('branch_score_latest').select('*, branches(code, name, city)'),
         supabase.from('branch_scores').select('branch_id, score'),
       ]);
@@ -84,20 +83,21 @@ export default function DashboardSupervisor() {
         <h1 className="text-[22px] font-bold tracking-tight">Supervisión operativa</h1>
       </div>
 
-      <div className="grid grid-cols-4 gap-3 mb-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
         <Kpi label="Verificadas hoy" value={`${verifiedToday}/${branches.length}`} sub={`${pct}% de cobertura`} color={pct >= 80 ? '#22e2a0' : pct >= 50 ? '#ffc736' : '#ff5468'} />
         <Kpi label="Pendientes hoy" value={pending.length} color={pending.length > 0 ? '#ff5468' : '#22e2a0'} pulse={pending.length > 0} />
         <Kpi label="Incidencias hoy" value={incidentsToday.length} color="#ffc736" />
         <Kpi label="Críticas hoy" value={criticalToday} color="#ff5468" />
       </div>
 
-      <div className="grid grid-cols-[1.4fr_1fr] gap-4 mb-4">
+      <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-4 mb-4">
         <div className="card !p-0 overflow-hidden">
           <div className="flex items-center justify-between px-4 pt-3.5 pb-2.5">
             <div className="text-sm font-semibold">Sucursales pendientes de verificar</div>
             <Link to="/monitoreo" className="text-brand text-[11.5px] hover:underline">Ir a Monitoreo →</Link>
           </div>
-          <table className="datatable">
+          <div className="overflow-x-auto">
+            <table className="datatable">
             <thead><tr><th>Código</th><th>Sucursal</th><th>Ciudad</th><th>Score</th><th>Última revisión</th></tr></thead>
             <tbody>
               {pending.length === 0 && <tr><td colSpan={5} className="text-center text-text3 py-6">Todas las sucursales fueron verificadas hoy.</td></tr>}
@@ -111,7 +111,8 @@ export default function DashboardSupervisor() {
                 </tr>
               ))}
             </tbody>
-          </table>
+            </table>
+          </div>
           {pending.length > 8 && (
             <div className="px-4 py-2.5 text-[11.5px] text-text3">+{pending.length - 8} sucursales más pendientes</div>
           )}
@@ -130,7 +131,7 @@ export default function DashboardSupervisor() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="card">
           <div className="text-sm font-semibold mb-1">📉 Mayor deterioro</div>
           <div className="text-[11.5px] text-text3 mb-3">Sucursales cuyo score empeoró más recientemente</div>

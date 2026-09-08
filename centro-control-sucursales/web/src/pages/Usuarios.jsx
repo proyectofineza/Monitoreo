@@ -98,7 +98,7 @@ export default function Usuarios() {
       {showForm && (
         <div className="card mb-4">
           <div className="text-sm font-semibold mb-3.5">Crear usuario</div>
-          <div className="grid grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div className="col-span-2">
               <div className="text-[10.5px] text-text3 uppercase tracking-wide mb-1">Email</div>
               <input className="input" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="nombre@fineza.com.py" />
@@ -126,7 +126,8 @@ export default function Usuarios() {
       )}
 
       <div className="card !p-0 overflow-hidden">
-        <table className="datatable">
+        <div className="overflow-x-auto">
+          <table className="datatable">
           <thead><tr><th>Nombre</th><th>Rol</th><th>Estado</th><th>Alta</th><th></th></tr></thead>
           <tbody>
             {loading && <tr><td colSpan={5} className="text-center text-text3 py-8">Cargando…</td></tr>}
@@ -155,7 +156,8 @@ export default function Usuarios() {
               </tr>
             ))}
           </tbody>
-        </table>
+          </table>
+        </div>
         <div className="px-4 py-2.5 text-[11.5px] text-text3">{users.length} usuarios registrados</div>
       </div>
     </div>

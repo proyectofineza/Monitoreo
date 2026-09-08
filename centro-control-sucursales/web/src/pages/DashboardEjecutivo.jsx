@@ -120,7 +120,7 @@ export default function DashboardEjecutivo() {
         <h1 className="text-[22px] font-bold tracking-tight">Vista ejecutiva de la red</h1>
       </div>
 
-      <div className="grid grid-cols-5 gap-3 mb-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-4">
         <Kpi label="Sucursales activas" value={activeBranches} sub={`${branches.length} en total`} />
         <Kpi label="Verificadas hoy" value={`${verifiedToday}/${activeBranches}`} sub={`${pctToday}% de cobertura`} color={pctToday >= 80 ? '#22e2a0' : pctToday >= 50 ? '#ffc736' : '#ff5468'} />
         <Kpi label="Score promedio red" value={avgScore ?? '—'} color={avgScore != null ? scoreColor(avgScore) : undefined} />
@@ -128,7 +128,7 @@ export default function DashboardEjecutivo() {
         <Kpi label="Críticas (histórico)" value={totalCritical30} color="#ff5468" />
       </div>
 
-      <div className="grid grid-cols-[1.15fr_.85fr_.85fr] gap-4 mb-4">
+      <div className="grid grid-cols-1 lg:grid-cols-[1.15fr_.85fr_.85fr] gap-4 mb-4">
         <div className="card">
           <div className="text-sm font-semibold mb-1">Incidencias registradas — últimos 14 días</div>
           <div className="text-[11.5px] text-text3 mb-3">Todas las sucursales</div>
@@ -188,7 +188,7 @@ export default function DashboardEjecutivo() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="card">
           <div className="text-sm font-semibold mb-1">⚠️ Sucursales que requieren atención</div>
           <div className="text-[11.5px] text-text3 mb-3">Las 5 de menor score en la red</div>

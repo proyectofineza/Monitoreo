@@ -89,12 +89,13 @@ export default function Auditoria() {
       </div>
 
       <div className="card !p-0 overflow-hidden">
-        <table className="datatable">
+        <div className="overflow-x-auto">
+          <table className="datatable">
           <thead><tr><th>Fecha</th><th>Tabla</th><th>Acción</th><th>Registro</th><th>Usuario</th><th></th></tr></thead>
           <tbody>
             {loading && <tr><td colSpan={6} className="text-center text-text3 py-8">Cargando…</td></tr>}
             {!loading && filtered.length === 0 && <tr><td colSpan={6} className="text-center text-text3 py-8">Sin eventos para este filtro.</td></tr>}
-            {!loading && filtered.slice(0, 100).map((l) => (
+            {!loading && filtered.map((l) => (
               <React.Fragment key={l.id}>
                 <tr>
                   <td className="font-mono text-text3">{fmtDateTime(l.changed_at)}</td>
@@ -131,8 +132,9 @@ export default function Auditoria() {
               </React.Fragment>
             ))}
           </tbody>
-        </table>
-        <div className="px-4 py-2.5 text-[11.5px] text-text3">Mostrando {Math.min(100, filtered.length)} de {filtered.length} eventos</div>
+          </table>
+        </div>
+        <div className="px-4 py-2.5 text-[11.5px] text-text3">Mostrando {filtered.length} de {filtered.length} eventos{filtered.length >= 300 ? ' (puede haber más — acotá el rango de fechas)' : ''}</div>
       </div>
     </div>
   );

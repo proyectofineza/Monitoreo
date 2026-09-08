@@ -129,7 +129,7 @@ export default function Reportes() {
         </div>
       </div>
 
-      <div className="grid grid-cols-4 gap-3 mb-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
         <SummaryCard label="Sucursales en el reporte" value={summary.length} />
         <SummaryCard label="Verificaciones" value={totals.checks} />
         <SummaryCard label="Incidencias" value={totals.incidents} color="#ffc736" />
@@ -156,14 +156,15 @@ export default function Reportes() {
       </div>
 
       <div className="card !p-0 overflow-hidden">
-        <table className="datatable">
+        <div className="overflow-x-auto">
+          <table className="datatable">
           <thead>
             <tr><th>Código</th><th>Sucursal</th><th>Ciudad</th><th>Verif.</th><th>Incid.</th><th>Baja</th><th>Media</th><th>Alta</th><th>Crítica</th><th>Score</th><th></th></tr>
           </thead>
           <tbody>
             {loading && <tr><td colSpan={11} className="text-center text-text3 py-8">Cargando…</td></tr>}
             {!loading && summary.length === 0 && <tr><td colSpan={11} className="text-center text-text3 py-8">Sin datos para este período.</td></tr>}
-            {!loading && summary.slice(0, 60).map((r) => (
+            {!loading && summary.map((r) => (
               <tr key={r.branch.id}>
                 <td className="font-mono text-text2">{r.branch.code}</td>
                 <td>{r.branch.name}</td>
@@ -179,9 +180,10 @@ export default function Reportes() {
               </tr>
             ))}
           </tbody>
-        </table>
+          </table>
+        </div>
         <div className="flex justify-between px-4 py-2.5 text-[11.5px] text-text3">
-          <span>Mostrando {Math.min(60, summary.length)} de {summary.length} sucursales</span>
+          <span>Mostrando {summary.length} de {summary.length} sucursales</span>
           <span>Rango: {dateFrom} → {dateTo}</span>
         </div>
       </div>

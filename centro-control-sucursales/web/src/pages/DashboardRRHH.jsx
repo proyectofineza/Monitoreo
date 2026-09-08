@@ -169,7 +169,7 @@ export default function DashboardRRHH() {
         <h1 className="text-[22px] font-bold tracking-tight">RRHH — Cobertura de sucursales</h1>
       </div>
 
-      <div className="grid grid-cols-4 gap-3 mb-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
         <Kpi label="Sucursales" value={total} sub="En el filtro actual" />
         <Kpi label="Controladas" value={controladas} color="#22e2a0" />
         <Kpi label="Pendientes" value={pendientes} color={pendientes > 0 ? '#ff5468' : '#22e2a0'} pulse={pendientes > 0} />
@@ -201,7 +201,7 @@ export default function DashboardRRHH() {
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-4 mb-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
         <div className="card">
           <div className="text-sm font-semibold mb-1">Estado de control</div>
           <div className="text-[11.5px] text-text3 mb-2">Controladas vs. pendientes</div>
@@ -261,7 +261,7 @@ export default function DashboardRRHH() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 mb-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
         <div className="card">
           <div className="text-sm font-semibold mb-1">Gravedad de incidencias</div>
           <div className="text-[11.5px] text-text3 mb-3">Incidencias del filtro actual, por severidad</div>
@@ -298,7 +298,8 @@ export default function DashboardRRHH() {
 
       <div className="card !p-0 overflow-hidden">
         <div className="px-4 pt-3.5 pb-2.5 text-sm font-semibold">Detalle por sucursal</div>
-        <table className="datatable">
+        <div className="overflow-x-auto">
+          <table className="datatable">
           <thead>
             <tr>
               <th>Código</th><th>Sucursal</th><th>Ciudad</th><th>Estado</th><th>Incidencias</th><th>Última verificación</th>
@@ -308,7 +309,7 @@ export default function DashboardRRHH() {
             {rows.length === 0 && (
               <tr><td colSpan={6} className="text-center text-text3 py-8">Sin sucursales para este filtro.</td></tr>
             )}
-            {rows.slice(0, 80).map((r) => (
+            {rows.map((r) => (
               <tr key={r.branch.id}>
                 <td className="font-mono text-text2">{r.branch.code}</td>
                 <td>{r.branch.name}</td>
@@ -325,8 +326,9 @@ export default function DashboardRRHH() {
               </tr>
             ))}
           </tbody>
-        </table>
-        <div className="px-4 py-2.5 text-[11.5px] text-text3">Mostrando {Math.min(80, rows.length)} de {rows.length} sucursales</div>
+          </table>
+        </div>
+        <div className="px-4 py-2.5 text-[11.5px] text-text3">Mostrando {rows.length} de {rows.length} sucursales</div>
       </div>
     </div>
   );
