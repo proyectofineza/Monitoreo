@@ -8,7 +8,11 @@ import {
 } from './icons.jsx';
 
 const NAV = [
-  { to: '/', label: 'Dashboard', Icon: IconDashboard, roles: ['admin', 'supervisor', 'monitoreo', 'rrhh'] },
+  // "Dashboard" no incluye a monitoreo: ese rol no tiene panel propio — al
+  // entrar a "/" el sistema lo redirige directo a Monitoreo (ver Home.jsx),
+  // así que mostrarle también este ítem era un acceso duplicado que
+  // parecía "no hacer nada" al hacer clic estando ya en Monitoreo.
+  { to: '/', label: 'Dashboard', Icon: IconDashboard, roles: ['admin', 'supervisor', 'rrhh'] },
   { to: '/monitoreo', label: 'Monitoreo', Icon: IconCamera, roles: ['admin', 'supervisor', 'monitoreo'] },
   { to: '/sucursales', label: 'Sucursales', Icon: IconBuilding, roles: ['admin', 'supervisor'] },
   { to: '/incidencias', label: 'Incidencias', Icon: IconAlert, roles: ['admin', 'supervisor'] },
