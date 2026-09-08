@@ -30,10 +30,12 @@ function shade(hex, percent) {
   return `rgb(${r}, ${g}, ${b})`;
 }
 
-// Tamaño de cada celda hexagonal y geometría del panal.
-const HEX_W = 98;
-const HEX_H = 114;
-const GAP = 8;
+// Tamaño de cada celda hexagonal y geometría del panal — agrandado
+// respecto al original para que entre el nombre completo de la sucursal,
+// no solo el código.
+const HEX_W = 136;
+const HEX_H = 158;
+const GAP = 9;
 const OVERLAP = HEX_H * 0.25;
 const STEP = HEX_H - OVERLAP;
 const COL_OFFSET = STEP / 2;
@@ -50,6 +52,7 @@ export default function Monitoreo() {
   const [tab, setTab] = useState('pendientes');
   const [estado, setEstado] = useState('todas');
   const [search, setSearch] = useState('');
+  const [cityFilter, setCityFilter] = useState('');
 
   const load = async () => {
     setLoading(true);
@@ -104,6 +107,8 @@ export default function Monitoreo() {
     });
   }, [branches, todayMap, lastMap, profilesMap, incByBranch]);
 
+  const cities = useMemo(() => [...new Set(branches.map((b) => b.city).filter(Boolean))].sort(), [branches]);
+
   const base = useMemo(() => {
     if (tab === 'pendientes') return rows.filter((r) => ['pendiente', 'en_revision'].includes(r.status));
     if (tab === 'verificadas') return rows.filter((r) => ['verificada', 'con_incidencia'].includes(r.status));
@@ -111,21 +116,26 @@ export default function Monitoreo() {
     return [];
   }, [rows, tab]);
 
+  const cityScoped = useMemo(() => {
+    if (!cityFilter) return base;
+    return base.filter((r) => r.branch.city === cityFilter);
+  }, [base, cityFilter]);
+
   const counts = useMemo(() => {
-    const c = { todas: base.length };
+    const c = { todas: cityScoped.length };
     ['pendiente', 'en_revision', 'verificada', 'con_incidencia'].forEach((s) => {
-      c[s] = base.filter((r) => r.status === s).length;
+      c[s] = cityScoped.filter((r) => r.status === s).length;
     });
     return c;
-  }, [base]);
+  }, [cityScoped]);
 
   const filtered = useMemo(() => {
-    let list = base;
+    let list = cityScoped;
     if (estado !== 'todas') list = list.filter((r) => r.status === estado);
     const q = search.trim().toLowerCase();
     if (q) list = list.filter((r) => `${r.branch.code} ${r.branch.name} ${r.branch.city}`.toLowerCase().includes(q));
     return list;
-  }, [base, estado, search]);
+  }, [cityScoped, estado, search]);
 
   const canOperate = role === 'monitoreo' || role === 'admin';
   const canOpenScore = role === 'admin' || role === 'supervisor';
@@ -185,6 +195,10 @@ export default function Monitoreo() {
               <IconSearch className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text3" />
               <input className="input !pl-8" placeholder="Buscar por código, nombre o ciudad…" value={search} onChange={(e) => setSearch(e.target.value)} />
             </div>
+            <select className="input !w-[170px]" value={cityFilter} onChange={(e) => setCityFilter(e.target.value)}>
+              <option value="">Todas las ciudades</option>
+              {cities.map((c) => <option key={c} value={c}>{c}</option>)}
+            </select>
             <div className="flex gap-1.5 flex-wrap">
               <Chip active={estado === 'todas'} onClick={() => setEstado('todas')} label={`Todas ${counts.todas}`} />
               {tab === 'pendientes' && (
@@ -231,7 +245,7 @@ export default function Monitoreo() {
               />
             )}
             <div className="flex justify-between px-1 pt-3 mt-1 border-t border-bordersoft text-[11.5px] text-text3">
-              <span>Mostrando {filtered.length} de {filtered.length} sucursales{estado !== 'todas' || search ? ' (filtradas)' : ''}</span>
+              <span>Mostrando {filtered.length} de {filtered.length} sucursales{estado !== 'todas' || search || cityFilter ? ' (filtradas)' : ''}</span>
               <span>Red completa: {branches.length} sucursales</span>
             </div>
           </div>
@@ -397,7 +411,7 @@ function HexCell({ r, isPending, clickable, marginTop, onClick }) {
       {/* Relleno interior, levemente más chico que la celda — deja ver el
           gutter oscuro como borde y le da forma de panal real. */}
       <div
-        className="absolute flex flex-col items-center justify-center px-2.5 transition-all duration-150"
+        className="absolute flex flex-col items-center justify-center px-2.5 overflow-hidden transition-all duration-150"
         style={{
           inset: '5%',
           clipPath: HEX_CLIP,
@@ -406,11 +420,11 @@ function HexCell({ r, isPending, clickable, marginTop, onClick }) {
           filter: hover ? 'brightness(1.1)' : 'brightness(1)',
         }}
       >
-        <span className="font-mono font-bold text-[13px] leading-none" style={{ color: '#0a0e14' }}>
+        <span className="font-mono font-bold text-[10.5px] leading-none opacity-70" style={{ color: '#0a0e14' }}>
           {r.branch.code}
         </span>
-        <span className="text-[8.5px] font-semibold leading-tight text-center mt-1 truncate max-w-full" style={{ color: 'rgba(10,14,20,.72)' }}>
-          {r.branch.city}
+        <span className="text-[9.5px] font-bold leading-[1.2] text-center mt-1" style={{ color: '#0a0e14' }}>
+          {r.branch.name}
         </span>
       </div>
 
